@@ -1,11 +1,38 @@
-import React from 'react'
+import React from "react";
+import SideBar from "./components/Sidebar";
+import { useState } from "react";
+import routes from "../routes";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-const  App = () => {
+const App = () => {
+  const [isOpen, setIsOpen] = useState(false);
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-4xl font-bold">Welcome to Vite + React</h1>
-    </div>
-  )
-}
+    <Router>
+      <div className=" min-h-screen bg-white">
+        {/* Sidebar and Header */}
+        <div className="bg-[#59b03c] p-4 flex justify-between items-center">
+          <SideBar isOpen={isOpen} setIsOpen={setIsOpen} />
+          <h1 className="text-3xl font-bold text-white">Bendita Patria</h1>
+          <img
+            src="svgs/menu.png"
+            width={30}
+            className="cursor-pointer"
+            alt="menu"
+            onClick={() => {
+              setIsOpen((prev) => !prev);
+            }}
+          />
+        </div>
+        <div className="w-full h-full">
+          <Routes>
+            {routes.map((route, index) => (
+              <Route key={index} path={route.path} element={route.element} />
+            ))}
+          </Routes>
+        </div>
+      </div>
+    </Router>
+  );
+};
 
-export default App
+export default App;
