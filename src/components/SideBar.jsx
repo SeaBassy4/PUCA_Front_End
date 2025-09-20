@@ -1,51 +1,88 @@
 import SideBarButton from "./SideBarButton";
 import { section1, section2 } from "../../sidebarbutton";
+import { useRef, useEffect } from "react";
+import { Home, Package, Clock, Users, FileText, LogOut } from "lucide-react";
 
 const SideBar = ({ isOpen, setIsOpen }) => {
+  const sidebarRef = useRef();
+
+  // Detectar clics fuera del sidebar
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, setIsOpen]);
+
   return (
     <div
-      className={`h-full w-[20%] bg-[#F5F5F5] flex flex-col p-5 absolute left-0 top-0 ${
-        isOpen ? "" : "hidden"
-      }`}
+      ref={sidebarRef}
+      className={`h-full w-[250px] bg-white flex flex-col border-r border-gray-200 fixed left-0 top-0 z-20 transition-transform duration-300
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
     >
-      <div className="flex w-full items-center justify-around">
-        <h1 className="text-[1.7rem] font-bold">Punto Cafetería</h1>
-        <span
-          className="font-bold text-2xl cursor-pointer select-none"
-          onClick={() => setIsOpen((prev) => !prev)}
-        >
-          X
-        </span>
+      {/* Logo */}
+      <div className="px-6 py-6 border-b border-gray-300">
+        <h1 className="text-2xl font-extrabold leading-tight tracking-wide">
+          <span className="block">
+            BENDI<span className="text-black">TA</span>
+          </span>
+          <span className="text-gray-700 font-normal">PATRIA</span>
+        </h1>
       </div>
 
-      {/* divider or "horizontal rule" */}
-      <div className="w-full bg-black h-[.5px] mt-5 mb-3" />
-
-      {/* first section */}
-      <div className="w-full mx-auto">
-        <h2 className="text-[#5C5C5C] text-[.8rem] mb-5">VISTAS</h2>
-        {/* buttons container */}
-        <div className="w-full flex-col">
-          {section1.map((button, index) => (
-            <SideBarButton
-              key={index}
-              text={button.text}
-              icon={button.black}
-              iconHover={button.white}
-              path={button.path}
-            />
-          ))}
-        </div>
+      {/* Vistas */}
+      <div className="px-6 mt-6">
+        <h2 className="text-gray-500 text-[0.75rem] font-semibold mb-4">
+          VISTAS
+        </h2>
+        <ul className="flex flex-col gap-4">
+          <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600">
+            <Home size={18} /> <span className="text-sm">Órdenes</span>
+          </li>
+          <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600">
+            <Package size={18} /> <span className="text-sm">Productos</span>
+          </li>
+          <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600">
+            <Clock size={18} /> <span className="text-sm">Historial</span>
+          </li>
+          <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600">
+            <Users size={18} /> <span className="text-sm">Usuarios</span>
+          </li>
+        </ul>
       </div>
 
-      {/* divider or "horizontal rule" */}
-      <div className="w-full bg-black h-[.5px] mt-5 mb-3" />
+      {/* Divider */}
+      <div className="w-full h-[1px] bg-gray-300 my-6" />
 
-      {/* second section */}
-      <div className="w-full mx-auto">
-        <h2 className="text-[#5C5C5C] text-[.8rem] mb-5">OTROS</h2>
-        {/* buttons container */}
-        <div className="w-[100%] flex-col">{/* button */}</div>
+      {/* Otros */}
+      <div className="px-6">
+        <h2 className="text-gray-500 text-[0.75rem] font-semibold mb-4">
+          OTROS
+        </h2>
+        <ul className="flex flex-col gap-4">
+          <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600">
+            <FileText size={18} /> <span className="text-sm">Reportes</span>
+          </li>
+          <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600">
+            <LogOut size={18} /> <span className="text-sm">Cerrar Sesión</span>
+          </li>
+        </ul>
+      </div>
+
+      {/* Usuario abajo */}
+      <div className="mt-auto px-6 pb-6">
+        <div className="bg-gray-100 border rounded-md p-3 text-center shadow-sm"></div>
       </div>
     </div>
   );

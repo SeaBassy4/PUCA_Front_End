@@ -10,19 +10,24 @@ const App = () => {
     <Router>
       <div className=" min-h-screen bg-white">
         {/* Sidebar and Header */}
-        <div className="bg-[#59b03c] p-4 flex items-center">
-          <img
-            src="svgs/menu.png"
-            width={30}
-            className="cursor-pointer"
-            alt="menu"
-            onClick={() => {
-              setIsOpen((prev) => !prev);
-            }}
-          />
+        <div className="bg-[#59b03c] p-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <img
+              src="svgs/menu.png"
+              width={30}
+              className="cursor-pointer"
+              alt="menu"
+              onClick={() => {
+                setIsOpen((prev) => !prev);
+              }}
+            />
+            <h1 className="text-3xl font-bold text-white">
+              Cafeteria "Bendita Patria"
+            </h1>
+          </div>
           <SideBar isOpen={isOpen} setIsOpen={setIsOpen} />
-          <h1 className="text-3xl font-bold ml-4 text-white">Bendita Patria</h1>
         </div>
+
         <div className="w-full h-full">
           <Routes>
             {routes.map((route, index) => (
