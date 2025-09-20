@@ -8,7 +8,7 @@ const App = () => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <Router>
-      <div className=" min-h-screen bg-white">
+      <div className=" min-h-screen flex flex-col bg-white">
         {/* Sidebar and Header */}
         <div className="bg-[#59b03c] p-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -28,7 +28,7 @@ const App = () => {
           <SideBar isOpen={isOpen} setIsOpen={setIsOpen} />
         </div>
 
-        <div className="w-full h-full">
+        <div className="flex-1 flex w-full">
           <Routes>
             {routes.map((route, index) => (
               <Route key={index} path={route.path} element={route.element} />
