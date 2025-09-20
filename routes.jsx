@@ -2,11 +2,15 @@
 import OrdersPage from "./src/pages/OrdersPage";
 import ProductsPage from "./src/pages/ProductsPage";
 import HistoryPage from "./src/pages/HistoryPage";
+import UsersPage from "./src/pages/UsersPage";
+import ReportsPage from "./src/pages/ReportsPage";
 
 const routes = [
   { path: "/ordenes", element: <OrdersPage /> },
   { path: "/productos", element: <ProductsPage /> },
   { path: "/historial", element: <HistoryPage /> },
+  { path: "/usuarios", element: <UsersPage /> },
+  { path: "/reportes", element: <ReportsPage /> },
 ];
 
 export default routes;

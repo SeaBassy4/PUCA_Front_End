@@ -2,10 +2,11 @@ import SideBarButton from "./SideBarButton";
 import { section1, section2 } from "../../sidebarbutton";
 import { useRef, useEffect } from "react";
 import { Home, Package, Clock, Users, FileText, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const SideBar = ({ isOpen, setIsOpen }) => {
   const sidebarRef = useRef();
-
+  const navigate = useNavigate();
   // Detectar clics fuera del sidebar
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -47,16 +48,28 @@ const SideBar = ({ isOpen, setIsOpen }) => {
           VISTAS
         </h2>
         <ul className="flex flex-col gap-4">
-          <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600">
+          <li
+            onClick={() => navigate("/ordenes")}
+            className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+          >
             <Home size={18} /> <span className="text-sm">Órdenes</span>
           </li>
-          <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600">
+          <li
+            onClick={() => navigate("/productos")}
+            className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+          >
             <Package size={18} /> <span className="text-sm">Productos</span>
           </li>
-          <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600">
+          <li
+            onClick={() => navigate("/historial")}
+            className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+          >
             <Clock size={18} /> <span className="text-sm">Historial</span>
           </li>
-          <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600">
+          <li
+            onClick={() => navigate("/usuarios")}
+            className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+          >
             <Users size={18} /> <span className="text-sm">Usuarios</span>
           </li>
         </ul>
@@ -71,7 +84,10 @@ const SideBar = ({ isOpen, setIsOpen }) => {
           OTROS
         </h2>
         <ul className="flex flex-col gap-4">
-          <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600">
+          <li
+            onClick={() => navigate("/reportes")}
+            className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+          >
             <FileText size={18} /> <span className="text-sm">Reportes</span>
           </li>
           <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600">
