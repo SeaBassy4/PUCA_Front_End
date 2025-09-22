@@ -1,0 +1,29 @@
+import React from "react";
+
+const Modal = ({ onClick, onClose, children, title }) => {
+  return (
+    <>
+      <div className="fixed inset-0 bg-black opacity-40 flex items-center justify-center z-40" />
+      <div className="bg-white p-4 flex flex-col rounded-md z-50 w-[30%] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg">
+        <h2 className="text-2xl font-bold mb-2">{title}</h2>
+        <div>{children}</div>
+        <div className="flex justify-end mt-4">
+          <span
+            onClick={onClose}
+            className="font-semibold p-2 cursor-pointer absolute top-2 right-2"
+          >
+            X
+          </span>
+          <button
+            onClick={onClick}
+            className="bg-[#59B03C] text-white font-semibold py-2 px-4 rounded-md w-full"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Modal;
