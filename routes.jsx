@@ -11,6 +11,7 @@ const routes = [
   { path: "/historial", element: <HistoryPage /> },
   { path: "/usuarios", element: <UsersPage /> },
   { path: "/reportes", element: <ReportsPage /> },
+  { path: "/", element: <OrdersPage/> }
 ];
 
 export default routes;
