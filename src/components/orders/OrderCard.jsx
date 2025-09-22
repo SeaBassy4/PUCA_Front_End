@@ -2,6 +2,8 @@ import React from "react";
 
 const OrderCard = ({ order }) => {
   //hacemos fetch de los detalles de la orden (dummy set por ahora)
+  //debemos de ver que coincida el id de la "order" property y el id del "detalleOrden"
+  //para mostrar los detalles de esa orden en particular que estamos recibiendo
   const detalleOrdenes = [
     {
       idOrden: 1,
@@ -116,13 +118,47 @@ const OrderCard = ({ order }) => {
       precioUnitario: 12.5,
     },
   ];
+  /*
+  {
+      idOrden: 1,
+      idProducto: "Café Latte",
+      idTamaño: "Grande",
+      cantidad: 2,
+      precioUnitario: 25.0,
+    },
+  */
+
+  const productos = detalleOrdenes.filter(
+    (detalleOrden) => order.idOrden === detalleOrden.idOrden
+  );
 
   return (
-    <div className="flex flex-col border bg-white border-gray-300 p-4 rounded-md w-full h-[250px]">
-      <h1 className="font-bold text-lg">{order.nombreCliente}</h1>
+    <div className="flex flex-col border relative bg-white border-gray-300 p-6 rounded-md w-full h-[250px]">
+      <h1 className="font-bold text-2xl mb-3">{order.idUsuario}</h1>
       <ul className="decoration-none">
-        <li>a</li>
+        {productos?.map((producto) => (
+          <li className="text-xl">
+            x{producto.cantidad} {producto.idProducto} -{" "}
+            <span className="font-bold">{producto.idTamaño}</span> -{" "}
+            <span className="text-green-600 font-bold">
+              ${(producto.precioUnitario * producto.cantidad).toFixed(2)}
+            </span>
+          </li>
+        ))}
       </ul>
+      <button className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 mt-auto w-2/3">
+        Completar Orden{" "}
+      </button>
+      {/* absolute positioned elements */}
+      <img
+        src="/svgs/delete.png"
+        width={30}
+        alt="borrar"
+        className="absolute bottom-7 right-6 cursor-pointer"
+      />
+      <span className="absolute top-4 right-6 font-bold text-xl">
+        Total: ${order.total.toFixed(2)}
+      </span>
     </div>
   );
 };

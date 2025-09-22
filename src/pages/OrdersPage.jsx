@@ -1,5 +1,6 @@
 import React from "react";
 import OrderCard from "../components/orders/OrderCard";
+import SearchBox from "../components/SearchBox";
 
 const OrdersPage = () => {
   //hacemos fetch de las ordenes pendientes (dummy set por ahora)
@@ -78,11 +79,7 @@ const OrdersPage = () => {
           <h2 className="font-bold text-2xl mx-4 text-white">
             Órdenes Pendientes
           </h2>
-          <input
-            type="text"
-            className="border border-gray-300 p-2 bg-white rounded-md mx-4"
-            placeholder="Buscar órdenes..."
-          />
+          <SearchBox></SearchBox>
         </div>
 
         {/* Contenedor scrollable */}
