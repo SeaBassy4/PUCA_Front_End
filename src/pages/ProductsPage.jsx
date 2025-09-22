@@ -1,24 +1,27 @@
 import React from "react";
 import SearchBox from "../components/SearchBox";
+import OptionBar from "../components/products/OptionBar";
 
 const ProductsPage = () => {
   return (
     <main className="flex w-full max-h-screen">
-      <div className="w-2/3 h-full">
+      <div className="w-2/3 h-full flex items-center justify-center">
         <div className="p-10 w-3xl flex flex-row flex-wrap items-center justify-between gap-4">
-          <span className="font-semibold text-xl">Productos en Venta</span>
-          <div className="w-[40%] flex flex-row gap-2 items-center ">
+          <div className="flex flex-row p-4 w-full bg-[#59B03C] rounded-md justify-evenly">
+            <h2 className="font-semibold text-xl text-white">
+              Productos en Venta
+            </h2>
             <SearchBox value="" onChange={() => {}} />
+            <select
+              className="bg-white border border-black rounded-md p-2 px-4 hover:bg-gray-100 font-semibold"
+              name="categoria"
+              id="categoria"
+            >
+              <option value="Categoria">Categoría</option>
+              <option value="Bebidas">Bebidas</option>
+              <option value="Alimentos">Alimentos</option>
+            </select>
           </div>
-          <select
-            className="outline-none border-none appearance-none p-1 font-semibold"
-            name="categoria"
-            id="categoria"
-          >
-            <option value="Categoria">Categoría</option>
-            <option value="Bebidas">Bebidas</option>
-            <option value="Alimentos">Alimentos</option>
-          </select>
 
           <div className="w-full h-105 border-1 rounded-[10px] border-gray-500 flex flex-row flex-wrap items-center px-10 py-5 gap-x-15 gap-y-7">
             <section className="w-40 h-42 border-1 border-gray-300 rounded-[10px] relative flex items-center justify-center">
@@ -115,53 +118,33 @@ const ProductsPage = () => {
         </div>
       </div>
       {/* lado derecho */}
-      <div className="ml-10 w-full h-full flex flex-col ">
+      <div className="w-full h-full flex flex-col items-center justify-center  ">
         {/* Categoría div*/}
-        <div className="w-full h-1/2 flex flex-col">
-          <div className="mt-8 flex flex-row justify-between items-center w-full ">
+        {/*Botones de categoría*/}
+        <div className="w-[88%] flex flex-col mt-2 border-b-2 borded-black pb-4">
+          <div className="flex flex-row justify-between w-full">
             <span className="font-semibold text-xl">
               Categoría de Productos
             </span>
-            <button className="bg-[#19212D] font-bold text-white text-xl rounded-[5px] mr-16 px-6 h-11 mb-1">
+            <button className="bg-[#19212D] font-bold text-white text-xl rounded-[5px] px-6 h-11">
               Añadir
             </button>
           </div>
-
-          {/*Botones de categoría*/}
-          <div className="w-[88%] flex flex-col mt-2 border-b-black border-b-1 gap-5">
-            <button className="w-full h-13 font-medium flex flex-row items-center gap-81 border-1 border-gray-300 rounded-[10px] px-5 py-5 mt-1">
-              Bebidas
-              <img className="w-5 h-5" src="svgs/right.png" alt="right" />
-            </button>
-            <button className="w-full h-13 font-medium flex flex-row items-center gap-77 border-1 border-gray-300 rounded-[10px] px-5 py-5 mb-5">
-              Alimentos
-              <img className="w-5 h-5" src="svgs/right.png" alt="right" />
-            </button>
-          </div>
+          <OptionBar title="Bebidas"></OptionBar>
+          <OptionBar title="Alimentos"></OptionBar>
         </div>
-        {/* Tamaño div*/}
-        <div className="w-full h-1/2 flex flex-col mt-0 ">
-          <div className="flex flex-row justify-between items-center w-full ">
-            <span className="font-semibold text-xl">Tamaño de bebidas</span>
-            <button className="bg-[#19212D] font-bold text-white text-xl rounded-[5px] mr-16 px-6 h-11 mb-2">
+        {/* tamaño de bebida div*/}
+        {/*Botones de tamaños bebidas*/}
+        <div className="w-[88%] flex flex-col mt-2 border-b-2 borded-black pb-4">
+          <div className="flex flex-row justify-between w-full">
+            <span className="font-semibold text-xl">Tamaño de Bebidas</span>
+            <button className="bg-[#19212D] font-bold text-white text-xl rounded-[5px] px-6 h-11">
               Añadir
             </button>
           </div>
-          {/*Botones de tamaño*/}
-          <div className="w-[88%] flex flex-col gap-3">
-            <button className="w-full h-13 font-medium flex flex-row items-center gap-85 border-1 border-gray-300 rounded-[10px] px-5 py-5">
-              Chico
-              <img className="w-5 h-5" src="svgs/right.png" alt="right" />
-            </button>
-            <button className="w-full h-13 font-medium flex flex-row items-center gap-79 border-1 border-gray-300 rounded-[10px] px-5 py-5">
-              Mediano
-              <img className="w-5 h-5" src="svgs/right.png" alt="right" />
-            </button>
-            <button className="w-full h-13 font-medium flex flex-row items-center gap-82 border-1 border-gray-300 rounded-[10px] px-5 py-5">
-              Grande
-              <img className="w-5 h-5" src="svgs/right.png" alt="right" />
-            </button>
-          </div>
+          <OptionBar title="Chico"></OptionBar>
+          <OptionBar title="Mediano"></OptionBar>
+          <OptionBar title="Grande"></OptionBar>
         </div>
       </div>
     </main>
