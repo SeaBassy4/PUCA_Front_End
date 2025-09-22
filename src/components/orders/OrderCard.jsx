@@ -1,6 +1,10 @@
 import React from "react";
 
-const OrderCard = ({ order, onComplete, onDelete, productos }) => {
+const OrderCard = ({ order, onComplete, onDelete, detalleOrdenes }) => {
+  const productos = detalleOrdenes.filter(
+    (detalleOrden) => detalleOrden?.idOrden === order?.idOrden
+  );
+
   return (
     <div className="flex flex-col border relative bg-white border-gray-300 p-6 rounded-md w-full h-[250px]">
       <h1 className="font-bold text-2xl mb-3">{order.idUsuario}</h1>

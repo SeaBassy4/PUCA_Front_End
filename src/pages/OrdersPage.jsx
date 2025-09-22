@@ -202,6 +202,7 @@ const OrdersPage = () => {
   const [showCompleteOrderModal, setShowCompleteOrderModal] = useState(false);
   const [showDeleteOrderModal, setShowDeleteOrderModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [search, setSearch] = useState("");
 
   //effects
   useEffect(() => {
@@ -213,6 +214,11 @@ const OrdersPage = () => {
     (detalleOrden) => detalleOrden?.idOrden === selectedOrder?.idOrden
   );
 
+  const ordenesFiltradas = ordenes.filter((orden) => {
+    const searchLower = search.toLowerCase();
+    return orden.idUsuario.toLowerCase().includes(searchLower);
+  });
+
   return (
     <div className="relative w-full flex-1 flex items-center justify-center">
       <div className="w-[85%] h-[80vh] border border-gray-400 flex flex-col bg-gray-100 rounded-md">
@@ -221,15 +227,18 @@ const OrdersPage = () => {
           <h2 className="font-bold text-2xl mx-4 text-white">
             Órdenes Pendientes
           </h2>
-          <SearchBox></SearchBox>
+          <SearchBox
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
 
         {/* Contenedor scrollable */}
         <div className="flex-1 w-full px-8 py-8 overflow-y-auto">
           <div className="grid grid-cols-2 gap-4">
-            {ordenes.map((order) => (
+            {ordenesFiltradas.map((order) => (
               <OrderCard
-                productos={productos}
+                detalleOrdenes={detalleOrdenes}
                 onComplete={() => {
                   setSelectedOrder(order);
                   setShowCompleteOrderModal((prev) => !prev);
@@ -264,6 +273,10 @@ const OrdersPage = () => {
               </li>
             ))}
           </ul>
+          <h2 className="font-semibold text-lg my-4">
+            Enviar ticket a whatsapp del cliente
+          </h2>
+          <SearchBox classNames="w-full" placeholder="Ejemplo: 123456789" />
         </Modal>
       )}
 
@@ -273,8 +286,20 @@ const OrdersPage = () => {
           title="Eliminar Orden"
           message="¿Estás seguro de que deseas eliminar esta orden?"
           onConfirm={() => setShowDeleteOrderModal((prev) => !prev)}
+          type={"delete"}
         >
-          Soy modal eliminar
+          <p className="mb-2">
+            Esta acción <span className="font-bold">eliminará</span> esta orden
+            por completo, ¿está usted seguro?
+          </p>
+          <ul className="my-2">
+            {productos?.map((prod) => (
+              <li key={prod.idProducto}>
+                x{prod.cantidad} {prod.idProducto} -{" "}
+                <span className="font-bold">{prod.idTamaño}</span>{" "}
+              </li>
+            ))}
+          </ul>
         </Modal>
       )}
     </div>
