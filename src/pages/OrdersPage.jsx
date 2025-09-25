@@ -3,200 +3,30 @@ import OrderCard from "../components/orders/OrderCard";
 import SearchBox from "../components/SearchBox";
 import Modal from "../components/Modal";
 import { useState, useEffect } from "react";
+import { getDetalleOrdenes } from "../services/detalle-orden.service";
+import { getOrdenes } from "../services/orden.service";
+import { useQuery } from "@tanstack/react-query";
 
 const OrdersPage = () => {
-  //hacemos fetch de las ordenes pendientes (dummy set por ahora)
-  const ordenes = [
-    {
-      idOrden: 1,
-      idUsuario: "Luis Aguilar",
-      nombreCliente: "María López",
-      fechaHora: "2025-09-20T09:30:00",
-      estado: "Pendiente",
-      total: 75.5,
-    },
-    {
-      idOrden: 2,
-      idUsuario: "Diana Pérez",
-      nombreCliente: "Carlos Hernández",
-      fechaHora: "2025-09-20T09:45:00",
-      estado: "Servida",
-      total: 42.0,
-    },
-    {
-      idOrden: 3,
-      idUsuario: "Juan Martínez",
-      nombreCliente: "Ana Gómez",
-      fechaHora: "2025-09-20T10:00:00",
-      estado: "Pendiente",
-      total: 120.75,
-    },
-    {
-      idOrden: 4,
-      idUsuario: "Sofía Ramírez",
-      nombreCliente: "Pedro Castillo",
-      fechaHora: "2025-09-20T10:15:00",
-      estado: "Finiquitada",
-      total: 60.0,
-    },
-    {
-      idOrden: 5,
-      idUsuario: "Carlos Torres",
-      nombreCliente: "Lucía Moreno",
-      fechaHora: "2025-09-20T10:30:00",
-      estado: "Pendiente",
-      total: 90.5,
-    },
-    {
-      idOrden: 6,
-      idUsuario: "Ana Jiménez",
-      nombreCliente: "Fernando Díaz",
-      fechaHora: "2025-09-20T10:45:00",
-      estado: "Servida",
-      total: 55.25,
-    },
-    {
-      idOrden: 7,
-      idUsuario: "Luis Aguilar",
-      nombreCliente: "Mariana Reyes",
-      fechaHora: "2025-09-20T11:00:00",
-      estado: "Pendiente",
-      total: 110.0,
-    },
-    {
-      idOrden: 8,
-      idUsuario: "Diana Pérez",
-      nombreCliente: "José Martínez",
-      fechaHora: "2025-09-20T11:15:00",
-      estado: "Cancelada",
-      total: 35.0,
-    },
-  ];
+  //fetch ordenes
+  const {
+    data: ordenes,
+    isLoading: ordenesLoading,
+    refetch: refetchOrdenes,
+  } = useQuery({
+    queryKey: ["ordenes"],
+    queryFn: getOrdenes,
+  });
 
-  //hacemos fetch de los detalles de la orden (dummy set por ahora)
-  //debemos de ver que coincida el id de la "order" property y el id del "detalleOrden"
-  //para mostrar los detalles de esa orden en particular que estamos recibiendo
-  const detalleOrdenes = [
-    {
-      idOrden: 1,
-      idProducto: "Café Latte",
-      idTamaño: "Grande",
-      cantidad: 2,
-      precioUnitario: 25.0,
-    },
-    {
-      idOrden: 1,
-      idProducto: "Croissant",
-      idTamaño: "Mediano",
-      cantidad: 1,
-      precioUnitario: 25.5,
-    },
-    {
-      idOrden: 2,
-      idProducto: "Espresso",
-      idTamaño: "Pequeño",
-      cantidad: 1,
-      precioUnitario: 12.0,
-    },
-    {
-      idOrden: 2,
-      idProducto: "Muffin de Chocolate",
-      idTamaño: "Mediano",
-      cantidad: 1,
-      precioUnitario: 30.0,
-    },
-    {
-      idOrden: 3,
-      idProducto: "Capuchino",
-      idTamaño: "Grande",
-      cantidad: 3,
-      precioUnitario: 30.25,
-    },
-    {
-      idOrden: 3,
-      idProducto: "Pan de Queso",
-      idTamaño: "Mediano",
-      cantidad: 2,
-      precioUnitario: 15.0,
-    },
-    {
-      idOrden: 4,
-      idProducto: "Café Americano",
-      idTamaño: "Grande",
-      cantidad: 2,
-      precioUnitario: 20.0,
-    },
-    {
-      idOrden: 4,
-      idProducto: "Bagel",
-      idTamaño: "Mediano",
-      cantidad: 1,
-      precioUnitario: 20.0,
-    },
-    {
-      idOrden: 5,
-      idProducto: "Chocolate Caliente",
-      idTamaño: "Grande",
-      cantidad: 1,
-      precioUnitario: 35.0,
-    },
-    {
-      idOrden: 5,
-      idProducto: "Brownie",
-      idTamaño: "Mediano",
-      cantidad: 2,
-      precioUnitario: 27.75,
-    },
-    {
-      idOrden: 6,
-      idProducto: "Latte Vainilla",
-      idTamaño: "Grande",
-      cantidad: 2,
-      precioUnitario: 25.0,
-    },
-    {
-      idOrden: 6,
-      idProducto: "Donut",
-      idTamaño: "Pequeño",
-      cantidad: 1,
-      precioUnitario: 5.25,
-    },
-    {
-      idOrden: 7,
-      idProducto: "Café Mocha",
-      idTamaño: "Grande",
-      cantidad: 2,
-      precioUnitario: 30.0,
-    },
-    {
-      idOrden: 7,
-      idProducto: "Panqué",
-      idTamaño: "Mediano",
-      cantidad: 2,
-      precioUnitario: 25.0,
-    },
-    {
-      idOrden: 8,
-      idProducto: "Té Verde",
-      idTamaño: "Pequeño",
-      cantidad: 1,
-      precioUnitario: 10.0,
-    },
-    {
-      idOrden: 8,
-      idProducto: "Galletas",
-      idTamaño: "Pequeño",
-      cantidad: 2,
-      precioUnitario: 12.5,
-    },
-  ];
-  /*{
-      idOrden: 1,
-      idProducto: "Café Latte",
-      idTamaño: "Grande",
-      cantidad: 2,
-      precioUnitario: 25.0,
-    }, */
+  //fetch ordenes
+  const {
+    data: detalleOrdenes,
+    isLoading: detalleOrdenesLoading,
+    refetch: refetchDetalleOrdenes,
+  } = useQuery({
+    queryKey: ["detalleOrdenes"],
+    queryFn: getDetalleOrdenes,
+  });
 
   //use states
   const [showCompleteOrderModal, setShowCompleteOrderModal] = useState(false);
@@ -206,18 +36,20 @@ const OrdersPage = () => {
 
   //effects
   useEffect(() => {
-    console.log("showCompleteOrderModal:", showCompleteOrderModal);
-    console.log("showDeleteOrderModal:", showDeleteOrderModal);
-  }, [showCompleteOrderModal, showDeleteOrderModal]);
+    console.log("ordenes", ordenes);
+    console.log("detalle ordenes", detalleOrdenes);
+  }, [ordenes, detalleOrdenes]);
 
-  const productos = detalleOrdenes.filter(
-    (detalleOrden) => detalleOrden?.idOrden === selectedOrder?.idOrden
-  );
+  const productos =
+    detalleOrdenes?.filter(
+      (detalleOrden) => detalleOrden.idOrden === selectedOrder?._id
+    ) || [];
 
-  const ordenesFiltradas = ordenes.filter((orden) => {
-    const searchLower = search.toLowerCase();
-    return orden.idUsuario.toLowerCase().includes(searchLower);
-  });
+  const ordenesFiltradas =
+    ordenes?.filter((orden) => {
+      const searchLower = search.toLowerCase();
+      return orden.idUsuario.nombre.toLowerCase().includes(searchLower);
+    }) || [];
 
   return (
     <div className="relative w-full flex-1 flex items-center justify-center">
@@ -239,6 +71,7 @@ const OrdersPage = () => {
             {ordenesFiltradas.map((order) => (
               <OrderCard
                 detalleOrdenes={detalleOrdenes}
+                order={order}
                 onComplete={() => {
                   setSelectedOrder(order);
                   setShowCompleteOrderModal((prev) => !prev);
