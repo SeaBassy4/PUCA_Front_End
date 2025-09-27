@@ -11,3 +11,13 @@ export const getOrdenes = async () => {
     throw error;
   }
 };
+
+export const putOrden = async (id, datos) => {
+  try {
+    const response = await axios.put(`${API_URL}/ordenes/${id}`, datos);
+    return response.data;
+  } catch (error) {
+    console.error("Error al fetchear ordenes:", error);
+    throw error;
+  }
+};

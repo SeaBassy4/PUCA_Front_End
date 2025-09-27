@@ -1,6 +1,6 @@
 import React from "react";
 
-const Modal = ({ onClick, onClose, children, title, type }) => {
+const Modal = ({ onClose, children, title, type, onConfirm }) => {
   const classes = type === "delete" ? "bg-red-600" : "bg-green-600";
 
   return (
@@ -17,7 +17,7 @@ const Modal = ({ onClick, onClose, children, title, type }) => {
             X
           </span>
           <button
-            onClick={onClick}
+            onClick={onConfirm}
             className={`text-white font-semibold py-2 px-4 rounded-md w-full ${classes}`}
           >
             Confirm

@@ -4,8 +4,10 @@ import SearchBox from "../components/SearchBox";
 import Modal from "../components/Modal";
 import { useState, useEffect } from "react";
 import { getDetalleOrdenes } from "../services/detalle-orden.service";
-import { getOrdenes } from "../services/orden.service";
+import { getOrdenes, putOrden } from "../services/orden.service";
 import { useQuery } from "@tanstack/react-query";
+import { validatePhoneNumber } from "../utils/validatePhoneNumber";
+import { toast } from "react-toastify";
 
 const OrdersPage = () => {
   //fetch ordenes
@@ -33,12 +35,22 @@ const OrdersPage = () => {
   const [showDeleteOrderModal, setShowDeleteOrderModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [search, setSearch] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const ORDER_STATE = {
+    COMPLETADA: "Completada",
+    PENDIENTE: "Pendiente",
+    CANCELADA: "Cancelada",
+  };
 
   //effects
   useEffect(() => {
     console.log("ordenes", ordenes);
     console.log("detalle ordenes", detalleOrdenes);
   }, [ordenes, detalleOrdenes]);
+
+  useEffect(() => {
+    setPhoneNumber("");
+  }, [showCompleteOrderModal]);
 
   const productos =
     detalleOrdenes?.filter(
@@ -47,95 +59,164 @@ const OrdersPage = () => {
 
   const ordenesFiltradas =
     ordenes?.filter((orden) => {
-      const searchLower = search.toLowerCase();
-      return orden.idUsuario.nombre.toLowerCase().includes(searchLower);
+      const matchSearch = orden.nombreCliente
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
+      const matchState = orden.estado === ORDER_STATE.PENDIENTE;
+
+      return matchSearch && matchState;
     }) || [];
 
   return (
-    <div className="relative w-full flex-1 flex items-center justify-center">
-      <div className="w-[85%] h-[80vh] border border-gray-400 flex flex-col bg-gray-100 rounded-md">
-        {/* Title y SearchBar Div */}
-        <div className="bg-[#59B03C] p-4 flex">
-          <h2 className="font-bold text-2xl mx-4 text-white">
-            Órdenes Pendientes
-          </h2>
-          <SearchBox
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+    <>
+      {ordenesLoading || detalleOrdenesLoading ? (
+        <div className="flex items-center justify-center h-screen">
+          <p className="text-3xl text-black">Cargando...</p>
         </div>
-
-        {/* Contenedor scrollable */}
-        <div className="flex-1 w-full px-8 py-8 overflow-y-auto">
-          <div className="grid grid-cols-2 gap-4">
-            {ordenesFiltradas.map((order) => (
-              <OrderCard
-                detalleOrdenes={detalleOrdenes}
-                order={order}
-                onComplete={() => {
-                  setSelectedOrder(order);
-                  setShowCompleteOrderModal((prev) => !prev);
-                }}
-                onDelete={() => {
-                  setSelectedOrder(order);
-                  setShowDeleteOrderModal((prev) => !prev);
-                }}
-                key={order.idOrden}
-                order={order}
+      ) : (
+        <div className="relative w-full flex-1 flex items-center justify-center">
+          <div className="w-[85%] h-[80vh] border border-gray-400 flex flex-col bg-gray-100 rounded-md">
+            {/* Title y SearchBar Div */}
+            <div className="bg-[#59B03C] p-4 flex">
+              <h2 className="font-bold text-2xl mx-4 text-white">
+                Órdenes Pendientes
+              </h2>
+              <SearchBox
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
-            ))}
-          </div>
-        </div>
-      </div>
-      {showCompleteOrderModal && (
-        <Modal
-          onClose={() => setShowCompleteOrderModal((prev) => !prev)}
-          title="Completar Orden"
-          message="¿Estás seguro de que deseas completar esta orden?"
-          onConfirm={() => setShowCompleteOrderModal((prev) => !prev)}
-        >
-          <p className="mb-2">
-            Esta acción mandará esta orden al historial y la marcará como
-            completada, ¿está usted seguro?
-          </p>
-          <ul className="my-2">
-            {productos?.map((prod) => (
-              <li key={prod.idProducto}>
-                x{prod.cantidad} {prod.idProducto} -{" "}
-                <span className="font-bold">{prod.idTamaño}</span>{" "}
-              </li>
-            ))}
-          </ul>
-          <h2 className="font-semibold text-lg my-4">
-            Enviar ticket a whatsapp del cliente
-          </h2>
-          <SearchBox classNames="w-full" placeholder="Ejemplo: 123456789" />
-        </Modal>
-      )}
+            </div>
 
-      {showDeleteOrderModal && (
-        <Modal
-          onClose={() => setShowDeleteOrderModal((prev) => !prev)}
-          title="Eliminar Orden"
-          message="¿Estás seguro de que deseas eliminar esta orden?"
-          onConfirm={() => setShowDeleteOrderModal((prev) => !prev)}
-          type={"delete"}
-        >
-          <p className="mb-2">
-            Esta acción <span className="font-bold">eliminará</span> esta orden
-            por completo, ¿está usted seguro?
-          </p>
-          <ul className="my-2">
-            {productos?.map((prod) => (
-              <li key={prod.idProducto}>
-                x{prod.cantidad} {prod.idProducto} -{" "}
-                <span className="font-bold">{prod.idTamaño}</span>{" "}
-              </li>
-            ))}
-          </ul>
-        </Modal>
+            {/* Contenedor scrollable */}
+            <div className="flex-1 w-full px-8 py-8 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-4">
+                {ordenesFiltradas.map((order) => (
+                  <OrderCard
+                    key={order._id}
+                    detalleOrdenes={detalleOrdenes}
+                    order={order}
+                    onComplete={() => {
+                      setSelectedOrder(order);
+                      setShowCompleteOrderModal((prev) => !prev);
+                    }}
+                    onDelete={() => {
+                      setSelectedOrder(order);
+                      setShowDeleteOrderModal((prev) => !prev);
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+          {showCompleteOrderModal && (
+            <Modal
+              onClose={() => {
+                setShowCompleteOrderModal((prev) => !prev);
+              }}
+              title="Completar Orden"
+              message="¿Estás seguro de que deseas completar esta orden?"
+              onConfirm={async () => {
+                if (!validatePhoneNumber(phoneNumber)) {
+                  toast.warning(
+                    "El celular debe ser de 10 dígitos o dejarse vacío"
+                  );
+                  return;
+                }
+                const completedOrder = {
+                  ...selectedOrder,
+                  estado: ORDER_STATE.COMPLETADA,
+                };
+                const response = await putOrden(
+                  selectedOrder?._id,
+                  completedOrder
+                );
+
+                if (response.ok) {
+                  refetchOrdenes();
+                  toast.success(response.message);
+                  setShowCompleteOrderModal((prev) => !prev);
+                  if (phoneNumber) {
+                    console.log(
+                      "Enviando ticket a whatsapp del cliente al:",
+                      phoneNumber
+                    );
+                  }
+                } else {
+                  toast.error(response.message);
+                }
+              }}
+            >
+              <p className="mb-2">
+                Esta acción mandará esta orden al historial y la marcará como
+                completada, ¿está usted seguro?
+              </p>
+              <ul className="my-2">
+                {/* son en realidad los "detalleOrdenes" */}
+                {productos?.map((prod) => (
+                  <li key={prod._id}>
+                    x{prod.cantidad} {prod.idProducto.nombre} -{" "}
+                    <span className="font-bold">{prod.idTamaño.nombre}</span>{" "}
+                  </li>
+                ))}
+              </ul>
+              <h2 className="font-semibold text-lg my-4">
+                Enviar ticket a whatsapp del cliente
+              </h2>
+              <SearchBox
+                value={phoneNumber}
+                onChange={(e) => {
+                  const onlyNumbers = e.target.value.replace(/\D/g, "");
+                  setPhoneNumber(onlyNumbers);
+                }}
+                classNames="w-full"
+                placeholder="Ejemplo: 6622334455"
+              />
+            </Modal>
+          )}
+
+          {showDeleteOrderModal && (
+            <Modal
+              onClose={() => setShowDeleteOrderModal((prev) => !prev)}
+              title="Cancelar Orden"
+              message="¿Estás seguro de que deseas cancelar esta orden?"
+              onConfirm={async () => {
+                const canceledOrder = {
+                  ...selectedOrder,
+                  estado: ORDER_STATE.CANCELADA,
+                };
+                const response = await putOrden(
+                  selectedOrder?._id,
+                  canceledOrder
+                );
+
+                if (response.ok) {
+                  refetchOrdenes();
+                  toast.success(response.message);
+                  setShowDeleteOrderModal((prev) => !prev);
+                } else {
+                  toast.error(response.message);
+                }
+              }}
+              type={"delete"}
+            >
+              <p className="mb-2">
+                Esta acción <span className="font-bold">cancelará</span> esta
+                orden (aún saldrá en reportes), ¿está usted seguro?
+              </p>
+              <ul className="my-2">
+                {productos?.map((prod) => (
+                  <li key={prod._id}>
+                    x{prod.cantidad} {prod.idProducto.nombre} -{" "}
+                    <span className="font-bold">{prod.idTamaño.nombre}</span>{" "}
+                  </li>
+                ))}
+              </ul>
+            </Modal>
+          )}
+        </div>
       )}
-    </div>
+    </>
   );
 };
 

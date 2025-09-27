@@ -4,6 +4,8 @@ import { useState } from "react";
 import routes from "../routes";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
   const queryClient = new QueryClient();
@@ -11,6 +13,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
+        <ToastContainer position="top-right" autoClose={3000} />
         <div className=" min-h-screen flex flex-col bg-white">
           {/* Sidebar and Header */}
           <div className="bg-[#59b03c] p-4 flex items-center justify-between">
