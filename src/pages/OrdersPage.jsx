@@ -90,23 +90,29 @@ const OrdersPage = () => {
 
             {/* Contenedor scrollable */}
             <div className="flex-1 w-full px-8 py-8 overflow-y-auto">
-              <div className="grid grid-cols-2 gap-4">
-                {ordenesFiltradas.map((order) => (
-                  <OrderCard
-                    key={order._id}
-                    detalleOrdenes={detalleOrdenes}
-                    order={order}
-                    onComplete={() => {
-                      setSelectedOrder(order);
-                      setShowCompleteOrderModal((prev) => !prev);
-                    }}
-                    onDelete={() => {
-                      setSelectedOrder(order);
-                      setShowDeleteOrderModal((prev) => !prev);
-                    }}
-                  />
-                ))}
-              </div>
+              {ordenesFiltradas.length === 0 ? (
+                <p className=" text-2xl text-center text-gray-500">
+                  No hay órdenes pendientes
+                </p>
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  {ordenesFiltradas.map((order) => (
+                    <OrderCard
+                      key={order._id}
+                      detalleOrdenes={detalleOrdenes}
+                      order={order}
+                      onComplete={() => {
+                        setSelectedOrder(order);
+                        setShowCompleteOrderModal((prev) => !prev);
+                      }}
+                      onDelete={() => {
+                        setSelectedOrder(order);
+                        setShowDeleteOrderModal((prev) => !prev);
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           {showCompleteOrderModal && (

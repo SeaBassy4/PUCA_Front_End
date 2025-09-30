@@ -1,6 +1,6 @@
 import React from "react";
 
-const Modal = ({ onClose, children, title, type, onConfirm }) => {
+const Modal = ({ onClose, children, title, type, onConfirm, onDelete }) => {
   const classes = type === "delete" ? "bg-red-600" : "bg-green-600";
 
   return (

@@ -1,8 +1,57 @@
 import React from "react";
 import SearchBox from "../components/SearchBox";
 import OptionBar from "../components/products/OptionBar";
+import ProductCard from "../components/products/ProductCard";
+import Modal from "../components/Modal";
+import InputLabel from "../components/InputLabel";
+
+import { toast } from "react-toastify";
+import { useState, useEffect } from "react";
+import { uploadImage } from "../services/storage.service";
+import { getCategorias } from "../services/categoria.service";
+import { getProductos, postProducto } from "../services/producto.service";
+import { useQuery } from "@tanstack/react-query";
+import { option } from "framer-motion/client";
 
 const ProductsPage = () => {
+  const {
+    data: productos,
+    isLoading: loadingProductos,
+    refetch: refetchProductos,
+  } = useQuery({
+    queryKey: ["productos"],
+    queryFn: getProductos,
+  });
+  const { data: categorias, isLoading: loadingCategorias } = useQuery({
+    queryKey: ["categorias"],
+    queryFn: getCategorias,
+  });
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null); // archivo real
+  const [previewUrl, setPreviewUrl] = useState(null); // preview temporal
+  const [nuevoProducto, setNuevoProducto] = useState({
+    nombre: "",
+    precioBase: "",
+    idCategoria: "",
+    descripcion: "",
+    imagenLink: "",
+  });
+
+  useEffect(() => {
+    console.log(nuevoProducto);
+  }, [nuevoProducto]);
+
+  //functions
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
   return (
     <main className="flex w-full max-h-screen">
       <div className="w-2/3 h-full flex items-center justify-center">
@@ -21,99 +70,28 @@ const ProductsPage = () => {
               <option value="Bebidas">Bebidas</option>
               <option value="Alimentos">Alimentos</option>
             </select>
+            <button
+              onClick={() => setShowAddModal((prev) => !prev)}
+              className="bg-[#19212D] font-bold text-white text-xl rounded-[5px] px-6 h-11"
+            >
+              Añadir
+            </button>
           </div>
 
+          {/* Contenedor de cards de alimentos */}
           <div className="w-full h-105 border-1 rounded-[10px] border-gray-500 flex flex-row flex-wrap items-center px-10 py-5 gap-x-15 gap-y-7">
-            <section className="w-40 h-42 border-1 border-gray-300 rounded-[10px] relative flex items-center justify-center">
-              <div className="absolute w-[85%] h-[70%] bg-gradient-to-b from-[#EDFFC5] to-[#59B03C] rounded-[10px] mx-5 mb-5 flex items-center justify-center">
-                <img
-                  className=""
-                  src="imgs/americano.png"
-                  alt="Café americano"
-                />
-              </div>
-              <span className="font-14 font-medium mt-33 mr-0.5 select-none">
-                Café Americano
-              </span>
-              <img
-                className="w-5 h-5 mt-33 "
-                src="svgs/right.png"
-                alt="right"
-              />
-            </section>
-            <section className="w-40 h-42 border-1 border-gray-300 rounded-[10px] relative flex items-center justify-center">
-              <div className="absolute w-[85%] h-[70%] bg-gradient-to-b from-[#EDFFC5] to-[#59B03C] rounded-[10px] mx-5 mb-5 flex items-center justify-center">
-                <img
-                  className="w-23"
-                  src="imgs/capuccino.png"
-                  alt="Capuccino"
-                />
-              </div>
-              <span className="font-14 font-medium mt-33 mr-10 select-none">
-                Capuccino
-              </span>
-              <img
-                className="w-5 h-5 mt-33 "
-                src="svgs/right.png"
-                alt="right"
-              />
-            </section>
-            <section className="w-40 h-42 border-1 border-gray-300 rounded-[10px] relative flex items-center justify-center">
-              <div className="absolute w-[85%] h-[70%] bg-gradient-to-b from-[#EDFFC5] to-[#59B03C] rounded-[10px] mx-5 mb-5 flex items-center justify-center">
-                <img className="w-10 " src="imgs/malteada.png" alt="Malteada" />
-              </div>
-              <span className="font-14 font-medium mt-33 mr-11 select-none">
-                Malteada
-              </span>
-              <img
-                className="w-5 h-5 mt-33 "
-                src="svgs/right.png"
-                alt="right"
-              />
-            </section>
-            <section className="w-40 h-42 border-1 border-gray-300 rounded-[10px] relative flex items-center justify-center">
-              <div className="absolute w-[85%] h-[70%] bg-gradient-to-b from-[#EDFFC5] to-[#59B03C] rounded-[10px] mx-5 mb-5 flex items-center justify-center">
-                <img className="" src="imgs/matcha.png" alt="Matcha" />
-              </div>
-              <span className="font-14 font-medium mt-33 mr-15 select-none">
-                Matcha
-              </span>
-              <img
-                className="w-5 h-5 mt-33 "
-                src="svgs/right.png"
-                alt="right"
-              />
-            </section>
-            <section className="w-40 h-42 border-1 border-gray-300 rounded-[10px] relative flex items-center justify-center">
-              <div className="absolute w-[85%] h-[70%] bg-gradient-to-b from-[#EDFFC5] to-[#59B03C] rounded-[10px] mx-5 mb-5 flex items-center justify-center">
-                <img
-                  className="w-30 pt-7"
-                  src="imgs/alimentos.png"
-                  alt="Alimentos"
-                />
-              </div>
-              <span className="font-14 font-medium mt-33 mr-11 select-none">
-                Alimentos
-              </span>
-              <img
-                className="w-5 h-5 mt-33 "
-                src="svgs/right.png"
-                alt="right"
-              />
-            </section>
-            <section className="w-40 h-42 border-1 border-gray-300 rounded-[10px] relative flex items-center justify-center">
-              <div className="absolute w-[85%] h-[70%] bg-gradient-to-b from-[#EDFFC5] to-[#59B03C] rounded-[10px] mx-5 mb-5 flex items-center justify-center">
-                <img className="w-20" src="imgs/boba.png" alt="Té de Boba" />
-              </div>
-              <span className="font-14 font-medium mt-33 mr-8 select-none">
-                Té de Boba
-              </span>
-              <img
-                className="w-5 h-5 mt-33 "
-                src="svgs/right.png"
-                alt="right"
-              />
-            </section>
+            {loadingProductos ? (
+              <p>Cargando productos...</p>
+            ) : (
+              productos.map((producto) => (
+                <ProductCard
+                  onClick={() => setShowEditModal((prev) => !prev)}
+                  title={producto?.nombre}
+                  altText={producto?.nombre}
+                  imgSrc={producto?.imagenLink}
+                ></ProductCard>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -147,6 +125,130 @@ const ProductsPage = () => {
           <OptionBar title="Grande"></OptionBar>
         </div>
       </div>
+      {showAddModal && (
+        <Modal
+          onClose={() => setShowAddModal(false)}
+          title="Añadir Producto"
+          onConfirm={async () => {
+            try {
+              const supabaseUrl = await uploadImage(selectedFile);
+              console.log("url supabase esta: ", supabaseUrl);
+              if (!supabaseUrl) {
+                toast.error("Error al subir la imagen");
+                return;
+              }
+              const productWithImage = {
+                ...nuevoProducto,
+                imagenLink: supabaseUrl,
+              };
+              console.log("producto a crear: ", productWithImage);
+
+              const response = await postProducto(productWithImage);
+
+              if (response.ok) {
+                refetchProductos();
+                toast.success(response.message);
+                setNuevoProducto({
+                  nombre: "",
+                  precioBase: "",
+                  descripcion: "",
+                  idCategoria: "",
+                });
+                setShowAddModal(false);
+              } else {
+                toast.error(response.message);
+              }
+            } catch (error) {
+              toast.error(error.message);
+            }
+          }}
+        >
+          <p>
+            Aquí podrá añadir un nuevo producto para añadirlo al área de ventas
+          </p>
+          <div className="my-2 gap-5 flex justify-around">
+            <InputLabel
+              classNames="w-full"
+              title="Nombre Producto"
+              onChange={(e) => {
+                setNuevoProducto({ ...nuevoProducto, nombre: e.target.value });
+              }}
+              value={nuevoProducto.nombre}
+              placeholder="Ingrese el nombre..."
+            />
+            <InputLabel
+              classNames="w-full"
+              title="Precio"
+              onChange={(e) => {
+                setNuevoProducto({
+                  ...nuevoProducto,
+                  precioBase: e.target.value,
+                });
+              }}
+              value={nuevoProducto.precioBase}
+              placeholder="Ingrese el precio..."
+            />
+          </div>
+          <div className="mb-2 flex flex-col">
+            <label className="font-bold mb-2">Categoría</label>
+            <select
+              className="border border-gray-300 rounded-md p-2"
+              name="categoria"
+              id="categoria"
+              value={nuevoProducto.idCategoria || ""}
+              onChange={(e) =>
+                setNuevoProducto({
+                  ...nuevoProducto,
+                  idCategoria: e.target.value,
+                })
+              }
+            >
+              {categorias.map((categoria) => (
+                <option key={categoria._id} value={categoria._id}>
+                  {categoria.nombre}
+                </option>
+              ))}
+              <option value="">Seleccionar</option>
+            </select>
+          </div>
+
+          <InputLabel
+            classNames="w-full mb-4"
+            title="Descripción"
+            onChange={(e) => {
+              setNuevoProducto({
+                ...nuevoProducto,
+                descripcion: e.target.value,
+              });
+            }}
+            value={nuevoProducto.descripcion}
+            placeholder="Ingrese la descripción..."
+          />
+          <div className="flex flex-row w-full justify-between">
+            <span className="font-bold mb-2">Imagen de Presentación</span>
+            <button
+              onClick={() => document.getElementById("fileInput").click()}
+              className="bg-[#19212D] font-bold text-white rounded-[5px] px-4"
+            >
+              Añadir
+            </button>
+            <input
+              onChange={handleFileChange}
+              id="fileInput"
+              type="file"
+              accept="image/*"
+              className="hidden"
+            />
+          </div>
+          <div className="flex justify-center items-center w-full">
+            <img
+              className="w-30 h-30 m-5"
+              src={previewUrl}
+              alt="placeholder image"
+            />
+          </div>
+        </Modal>
+      )}
     </main>
   );
 };

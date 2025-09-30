@@ -17,7 +17,7 @@ export const putOrden = async (id, datos) => {
     const response = await axios.put(`${API_URL}/ordenes/${id}`, datos);
     return response.data;
   } catch (error) {
-    console.error("Error al fetchear ordenes:", error);
+    console.error("Error al actualizar orden:", error);
     throw error;
   }
 };
