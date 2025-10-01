@@ -32,17 +32,27 @@ const HistoryPage = () => {
   const [showEmpleado, setShowEmpleado] = useState(false);
 
   const ordenesCompletadas = 
-    historial?.filter((orden) => orden.estado === "Completada"
-    || orden.estado === "Cancelada" ) || [];
+    historial?.filter((orden) => {
+      const matchSearch = orden.nombreCliente
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
+      const matchState = orden.estado === "Cancelada" 
+      || orden.estado === "Completada";
 
+      return matchSearch && matchState;
+    }) || [];
+
+ 
 
 
   return (
     <div className="w-full flex-1 flex flex-col items-center justify-center">
       <div className="flex flex-row p-4 w-[90%]">
         <h2 className="text-2xl font-bold ">Historial de Órdenes</h2>
-        <SearchBox value="" onChange={() => {}} />
+        <SearchBox 
+          value={search}
+          onChange={(e) => setSearch(e.target.value)} />
       </div>
       <div className="w-full flex flex-col items-center">
       <div className="w-[90%] overflow-x-auto bg-white border rounded-md shadow-md">
@@ -62,7 +72,9 @@ const HistoryPage = () => {
                 key={orden.id}
                 className="border-t hover:bg-gray-100 transition"
               >
-                <td className="p-3">{orden.nombreCliente}</td>
+                <td className="p-3">
+                  {orden.nombreCliente}
+                  </td>
                 <td className="p-3">
                   {new Date(orden.fechaHora).toLocaleString("es-MX")}
                 </td>
