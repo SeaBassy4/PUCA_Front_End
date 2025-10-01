@@ -1,4 +1,3 @@
-import OrdersHistoryTable from "../components/history/OrdersHistoryTable";
 import React from "react";
 import SearchBox from "../components/SearchBox";
 import OptionBar from "../components/products/OptionBar";
@@ -33,7 +32,8 @@ const HistoryPage = () => {
   const [showEmpleado, setShowEmpleado] = useState(false);
 
   const ordenesCompletadas = 
-    historial?.filter((orden) => orden.estado === "Completada");
+    historial?.filter((orden) => orden.estado === "Completada"
+    || orden.estado === "Cancelada" ) || [];
 
 
 
@@ -57,19 +57,19 @@ const HistoryPage = () => {
             </tr>
           </thead>
           <tbody>
-            {historialOrdenes.map((orden) => (
-
+            {ordenesCompletadas.map((orden) => (
               <tr
                 key={orden.id}
                 className="border-t hover:bg-gray-100 transition"
               >
-                <td className="p-3">{orden.cliente}</td>
+                <td className="p-3">{orden.nombreCliente}</td>
                 <td className="p-3">
                   {new Date(orden.fechaHora).toLocaleString("es-MX")}
                 </td>
                 <td className="p-3">{orden.estado}</td>
-                <td className="p-3 font-semibold">${orden.total.toFixed(2)}</td>
-                <td className="p-3">{orden.empleado}</td>
+                <td className="p-3 font-semibold">
+                ${orden.total.toFixed(2)}</td>
+                <td className="p-3">{orden.idUsuario?.nombre || "N/A"}</td>
               </tr>
             ))}
           </tbody>
@@ -79,9 +79,5 @@ const HistoryPage = () => {
     </div>
   );
 };
-
-
-    
-
 
 export default HistoryPage;
