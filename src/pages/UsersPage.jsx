@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import SearchBox from "../components/SearchBox";
 import Modal from "../components/Modal";
-import { obtenerUsuarios, crearUsuario, actualizarUsuario, deletearUsuario } from "../services/usuario.service";
-
-
-
-
-
+import {
+  getUsuarios as obtenerUsuarios,
+  postUsuario as crearUsuario,
+  putUsuario as actualizarUsuario,
+  deleteUsuario as deletearUsuario,
+} from "../services/usuario.service";
 
 const UsersTable = () => {
   const [usuarios, setUsuarios] = useState([]); //array dinamico, almacena la lista del backend
@@ -25,20 +25,18 @@ const UsersTable = () => {
     contraseña: "",
     rol: "",
   });
-  
 
-useEffect(() => {
-  const fetchUsuarios = async () => {
-    try {
-      const data = await obtenerUsuarios();
-      setUsuarios(data);
-    } catch (err) {
-      console.error("Error cargando usuarios:", err);
-    }
-  };
-  fetchUsuarios();
-}, []);
-
+  useEffect(() => {
+    const fetchUsuarios = async () => {
+      try {
+        const data = await obtenerUsuarios();
+        setUsuarios(data);
+      } catch (err) {
+        console.error("Error cargando usuarios:", err);
+      }
+    };
+    fetchUsuarios();
+  }, []);
 
   //prellenar cuando sea editar
   useEffect(() => {
@@ -69,38 +67,34 @@ useEffect(() => {
   };
 
   const handleConfirm = async () => {
-  try {
-    if (action === "add"){
-      await crearUsuario(form);   //llamada al post del usuario.service.js
-
-    }else if (action === "edit" && selectedUser)  {
-
-    
-      await actualizarUsuario (selectedUser._id, form); //put
-
+    try {
+      if (action === "add") {
+        await crearUsuario(form); //llamada al post del usuario.service.js
+      } else if (action === "edit" && selectedUser) {
+        await actualizarUsuario(selectedUser._id, form); //put
+      }
+      const updatedList = await obtenerUsuarios(); //refresh a la tabla
+      setUsuarios(updatedList);
+      setShowModal(false);
+    } catch (err) {
+      console.error("Peto el guardar usuario", err);
     }
-    const updatedList = await obtenerUsuarios(); //refresh a la tabla
-    setUsuarios(updatedList);
-    setShowModal(false);
-
-    }catch (err){
-      console.error("Peto el guardar usuario", err)
-      
-    }
-
   };
 
   const handleDelete = async (id) => {
-  if (!window.confirm("¿Estas completamente eguro que quieres eliminar este usuario?")) return;
-  try {
-    await deletearUsuario(id); //delete
-    setUsuarios((prev) => prev.filter((u) => u._id !== id));
-  } catch (err) {
-    console.error("Peto:", err);
-    
-  }
-};
-
+    if (
+      !window.confirm(
+        "¿Estas completamente eguro que quieres eliminar este usuario?"
+      )
+    )
+      return;
+    try {
+      await deletearUsuario(id); //delete
+      setUsuarios((prev) => prev.filter((u) => u._id !== id));
+    } catch (err) {
+      console.error("Peto:", err);
+    }
+  };
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -115,7 +109,10 @@ useEffect(() => {
 
         <div className="flex-1 flex">
           <div className="w-[300px]">
-            <SearchBox value={search} onChange={(e) => setSearch(e.target.value)} />
+            <SearchBox
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         </div>
 
@@ -143,7 +140,10 @@ useEffect(() => {
             </thead>
             <tbody>
               {usuarios.map((u) => (
-                <tr key={u._id} className="border-t hover:bg-gray-100 transition">
+                <tr
+                  key={u._id}
+                  className="border-t hover:bg-gray-100 transition"
+                >
                   <td className="p-3">{u.nombre}</td>
                   <td className="p-3">{u.celular}</td>
                   <td className="p-3">{u.correo}</td>
@@ -157,7 +157,7 @@ useEffect(() => {
                       >
                         Editar
                       </button>
-                       <button
+                      <button
                         onClick={() => handleDelete(u._id)}
                         className="px-4 py-2 rounded-md bg-neutral-900 text-white font-semibold hover:opacity-90"
                       >
@@ -179,16 +179,18 @@ useEffect(() => {
         </div>
       </div>
 
-      
       {showModal && (
         <Modal
           title={action === "add" ? "Añadir Usuario" : "Editar Usuario"}
           onClose={() => setShowModal(false)}
           onConfirm={handleConfirm}
         >
-          
           <p className="text-sm text-gray-600 mb-4">
-            Aquí podrá {action === "add" ? "añadir un nuevo usuario a su sistema, ya sea empleado o administrador" : "editar la información del usuario seleccionado"}.
+            Aquí podrá{" "}
+            {action === "add"
+              ? "añadir un nuevo usuario a su sistema, ya sea empleado o administrador"
+              : "editar la información del usuario seleccionado"}
+            .
           </p>
 
           {/*Fila Nombre / Celular (dos columnas)*/}
@@ -229,11 +231,13 @@ useEffect(() => {
             />
           </div>
 
-          
           <div className="mt-4">
-            <label className="block font-semibold mb-1">Contraseña Inicial</label>
+            <label className="block font-semibold mb-1">
+              Contraseña Inicial
+            </label>
             <p className="text-sm text-gray-600 mb-2">
-              Esta contraseña servirá para iniciar sesión la primera vez, el usuario deberá cambiarla al entrar
+              Esta contraseña servirá para iniciar sesión la primera vez, el
+              usuario deberá cambiarla al entrar
             </p>
             <input
               type="password"
@@ -248,7 +252,7 @@ useEffect(() => {
           {/*Rol*/}
           <div className="mt-4">
             <label className="block font-semibold mb-1">Rol</label>
-            
+
             <input
               name="rol"
               value={form.rol}
@@ -256,9 +260,7 @@ useEffect(() => {
               className="w-full border rounded-md p-2 outline-none focus:ring-2 focus:ring-[#59B03C]"
               placeholder=""
             />
-
           </div>
-
         </Modal>
       )}
     </div>

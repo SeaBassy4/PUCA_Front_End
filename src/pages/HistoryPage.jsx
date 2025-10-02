@@ -13,59 +13,43 @@ import { getProductos, postProducto } from "../services/producto.service";
 import { useQuery } from "@tanstack/react-query";
 import { option } from "framer-motion/client";
 import { getOrdenes } from "../services/orden.service";
-import { obtenerUsuarios } from "../services/usuario.service";
+import { getUsuarios } from "../services/usuario.service";
 
 const HistoryPage = () => {
   const {
-    data: historial,
-    isLoading: loadingHistorial,
-    refetch: refetchHistorial,
+    data: ordenes,
+    isLoading: ordenesLoading,
+    refetch: refetchOrdenes,
   } = useQuery({
-    queryKey: ["historial"],
+    queryKey: ["ordenes"],
     queryFn: getOrdenes,
   });
   const {
-    data: usuariosEmpleados,
-    isLoading: loadingUsuariosEmpleados,
-    refetch: refetchUsuariosEmpleados,
+    data: empleados,
+    isLoading: empleadosLoading,
+    refetch: refetchEmpleados,
   } = useQuery({
-    queryKey: ["usuariosEmpleados"],
-    queryFn: obtenerUsuarios,
+    queryKey: ["empleados"],
+    queryFn: getUsuarios,
   });
 
-
-
   const [search, setSearch] = useState("");
-  const [showEstado, setShowEstado] = useState("All");
-  const [showTotal, setShowTotal] = useState(false);
-  const [showEmpleado, setShowEmpleado] = useState("Empleado");
+  const [selectedState, setSelectedState] = useState("");
+  const [selectedEmpleado, setSelectedEmpleado] = useState("");
 
-  const ordenesTerminadas =
-    historial?.filter((orden) => {
-      const matchSearch = orden.nombreCliente
-        .toLowerCase()
-        .includes(search.toLowerCase());
+  if (!ordenes || !empleados) {
+    return <div>Cargando...</div>;
+  }
 
-      const matchState =
-        showEstado === "All" ? orden.estado === "Completada" || orden.estado === "Cancelada" :
-          orden.estado === showEstado;
+  const filteredOrdenes = ordenes.filter((orden) => {
+    return (
+      orden.nombreCliente.toLowerCase().includes(search.toLowerCase()) &&
+      (orden.estado === selectedState || selectedState === "") &&
+      (orden.idUsuario._id === selectedEmpleado || selectedEmpleado === "")
+    );
+  });
 
-      return matchSearch && matchState;
-    }) || [];
-
-  const mostrarUsuarios =
-    usuariosEmpleados?.filter((usuario) => usuario.activo) || []; 
-
-  const filtroUsuario =
-    usuariosEmpleados?.filter((usuario) => {
-    const matchState =
-      showEmpleado === "Empleado" ? usuario.id && usuario.activo === true : 
-      usuario.id === parseInt(showEmpleado);
-
-      return matchState;
-    }) || [];
-
-
+  const filteredEmpleados = empleados.filter((empleado) => empleado.activo);
 
   return (
     <div className="w-full flex-1 flex flex-col items-center">
@@ -74,36 +58,39 @@ const HistoryPage = () => {
         <SearchBox
           className="px-4"
           value={search}
-          onChange={(e) => setSearch(e.target.value)} />
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar por cliente..."
+        />
         <select
           className="bg-white border border-black rounded-md p-2 px-4 hover:bg-gray-100 font-semibold"
           name="estado"
           id="estado"
-          value={showEstado}
-          onChange={(e) => setShowEstado(e.target.value)}
+          value={selectedState}
+          onChange={(e) => setSelectedState(e.target.value)}
         >
-          <option value="All">Estado</option>
-          <option value="Completada">Completadas</option>
-          <option value="Cancelada">Canceladas</option>
+          <option value="">Seleccionar</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Completada">Completada</option>
+          <option value="Cancelada">Cancelada</option>
         </select>
         <select
           className="bg-white border border-black rounded-md p-2 px-4 hover:bg-gray-100 font-semibold"
           name="empleado"
           id="empleado"
-          value={showEmpleado}
-          onChange={(e) => setShowEmpleado(e.target.value)}
+          value={selectedEmpleado}
+          onChange={(e) => setSelectedEmpleado(e.target.value)}
         >
-          
-          <option value="Empleado">Empleado</option>
-          {mostrarUsuarios.map((usuario) => (
-            <option key={usuario.id} value={usuario.id}>
-              {usuario.nombre}
+          {filteredEmpleados.map((empleado) => (
+            <option key={empleado._id} value={empleado._id}>
+              {empleado.nombre}
             </option>
           ))}
-
+          <option value="">Seleccionar</option>
         </select>
       </div>
-      <div className="w-full flex flex-col items-center">  {/* Contenedor principal*/}
+      <div className="w-full flex flex-col items-center">
+        {" "}
+        {/* Contenedor principal*/}
         <div className="w-[90%] overflow-x-auto bg-white border rounded-md shadow-md">
           <table className="w-full border-collapse">
             <thead>
@@ -116,20 +103,19 @@ const HistoryPage = () => {
               </tr>
             </thead>
             <tbody>
-              {ordenesTerminadas.map((orden) => (
+              {filteredOrdenes.map((orden) => (
                 <tr
-                  key={orden.id}
+                  key={orden._id}
                   className="border-t hover:bg-gray-100 transition"
                 >
-                  <td className="p-3">
-                    {orden.nombreCliente}
-                  </td>
+                  <td className="p-3">{orden.nombreCliente}</td>
                   <td className="p-3">
                     {new Date(orden.fechaHora).toLocaleString("es-MX")}
                   </td>
                   <td className="p-3">{orden.estado}</td>
                   <td className="p-3 font-semibold">
-                    ${orden.total.toFixed(2)}</td>
+                    ${orden.total.toFixed(2)}
+                  </td>
                   <td className="p-3">{orden.idUsuario?.nombre || "N/A"}</td>
                 </tr>
               ))}
