@@ -31,3 +31,13 @@ export const postProducto = async (datos) => {
     throw error;
   }
 };
+
+export const deleteProducto = async (id) => {
+  try {
+    const response = await axios.delete(`${API_URL}/productos/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al eliminar producto:", error);
+    throw error;
+  }
+};

@@ -1,3 +1,4 @@
+import { div } from "framer-motion/client";
 import React from "react";
 
 const Modal = ({ onClose, children, title, type, onConfirm, onDelete }) => {
@@ -16,12 +17,29 @@ const Modal = ({ onClose, children, title, type, onConfirm, onDelete }) => {
           >
             X
           </span>
-          <button
-            onClick={onConfirm}
-            className={`text-white font-semibold py-2 px-4 rounded-md w-full ${classes}`}
-          >
-            Confirm
-          </button>
+          {onDelete ? (
+            <div className="flex flex-row gap-5 w-full">
+              <button
+                onClick={onConfirm}
+                className={`text-white font-semibold py-2 px-4 rounded-md w-full bg-green-600`}
+              >
+                Confirm
+              </button>
+              <button
+                onClick={onDelete}
+                className={`text-white font-semibold py-2 px-4 rounded-md w-full bg-red-600`}
+              >
+                Eliminar
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onConfirm}
+              className={`text-white font-semibold py-2 px-4 rounded-md w-full ${classes}`}
+            >
+              Confirm
+            </button>
+          )}
         </div>
       </div>
     </>
