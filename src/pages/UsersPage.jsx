@@ -1,45 +1,15 @@
 import React, { useEffect, useState } from "react";
 import SearchBox from "../components/SearchBox";
 import Modal from "../components/Modal";
+import { obtenerUsuarios, crearUsuario, actualizarUsuario, deletearUsuario } from "../services/usuario.service";
 
-// Dummy data 
-const usuarios = [
-  {
-    idUsuario: 1,
-    nombre: "Jesús Miguel López",
-    celular: "6655443322",
-    correo: "juanito12@gmail.com",
-    contrasena: "***********",
-    rol: "Empleado",
-  },
-  {
-    idUsuario: 2,
-    nombre: "Jesús Miguel López",
-    celular: "6655443322",
-    correo: "juanito12@gmail.com",
-    contrasena: "***********",
-    rol: "Empleado",
-  },
-  {
-    idUsuario: 3,
-    nombre: "Jesús Miguel López",
-    celular: "6655443322",
-    correo: "juanito12@gmail.com",
-    contrasena: "***********",
-    rol: "Empleado",
-  },
-  {
-    idUsuario: 4,
-    nombre: "Luis Eagler",
-    celular: "6655443322",
-    correo: "juanito12@gmail.com",
-    contrasena: "***********",
-    rol: "Administrador",
-  },
-];
+
+
+
 
 
 const UsersTable = () => {
+  const [usuarios, setUsuarios] = useState([]); //array dinamico, almacena la lista del backend
   const [search, setSearch] = useState("");
 
   //modal state
@@ -47,14 +17,28 @@ const UsersTable = () => {
   const [action, setAction] = useState("add"); // "agregar" | "editar"
   const [selectedUser, setSelectedUser] = useState(null);
 
-  //form state
+  //datos del modal inputs
   const [form, setForm] = useState({
     nombre: "",
     celular: "",
     correo: "",
-    contrasena: "",
+    contraseña: "",
     rol: "",
   });
+  
+
+useEffect(() => {
+  const fetchUsuarios = async () => {
+    try {
+      const data = await obtenerUsuarios();
+      setUsuarios(data);
+    } catch (err) {
+      console.error("Error cargando usuarios:", err);
+    }
+  };
+  fetchUsuarios();
+}, []);
+
 
   //prellenar cuando sea editar
   useEffect(() => {
@@ -63,12 +47,12 @@ const UsersTable = () => {
         nombre: selectedUser.nombre || "",
         celular: selectedUser.celular || "",
         correo: selectedUser.correo || "",
-        contrasena: "", //por seguridad, no se mostrara
+        contraseña: "", //por seguridad, no se mostrara
         rol: selectedUser.rol || "",
       });
     }
     if (action === "add") {
-      setForm({ nombre: "", celular: "", correo: "", contrasena: "", rol: "" });
+      setForm({ nombre: "", celular: "", correo: "", contraseña: "", rol: "" });
     }
   }, [action, selectedUser]);
 
@@ -84,11 +68,39 @@ const UsersTable = () => {
     setShowModal(true);
   };
 
-  const handleConfirm = () => {
-    // POST/PUT al backend o actualizarías estado local
-    // por ahora solo cerramos
+  const handleConfirm = async () => {
+  try {
+    if (action === "add"){
+      await crearUsuario(form);   //llamada al post del usuario.service.js
+
+    }else if (action === "edit" && selectedUser)  {
+
+    
+      await actualizarUsuario (selectedUser._id, form); //put
+
+    }
+    const updatedList = await obtenerUsuarios(); //refresh a la tabla
+    setUsuarios(updatedList);
     setShowModal(false);
+
+    }catch (err){
+      console.error("Peto el guardar usuario", err)
+      
+    }
+
   };
+
+  const handleDelete = async (id) => {
+  if (!window.confirm("¿Estas completamente eguro que quieres eliminar este usuario?")) return;
+  try {
+    await deletearUsuario(id); //delete
+    setUsuarios((prev) => prev.filter((u) => u._id !== id));
+  } catch (err) {
+    console.error("Peto:", err);
+    
+  }
+};
+
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -99,7 +111,7 @@ const UsersTable = () => {
     <div className="w-full flex flex-col items-center">
       {/* Barra superior */}
       <div className="w-[90%] mt-4 flex items-center gap-3">
-        <h2 className="text-xl font-bold">Historial de Órdenes</h2>
+        <h2 className="text-xl font-bold">Usuarios del Sistema</h2>
 
         <div className="flex-1 flex">
           <div className="w-[300px]">
@@ -131,11 +143,11 @@ const UsersTable = () => {
             </thead>
             <tbody>
               {usuarios.map((u) => (
-                <tr key={u.id} className="border-t hover:bg-gray-100 transition">
+                <tr key={u._id} className="border-t hover:bg-gray-100 transition">
                   <td className="p-3">{u.nombre}</td>
                   <td className="p-3">{u.celular}</td>
                   <td className="p-3">{u.correo}</td>
-                  <td className="p-3">{u.contrasena}</td>
+                  <td className="p-3">{u.contraseña}</td>
                   <td className="p-3">{u.rol}</td>
                   <td className="p-3">
                     <div className="flex gap-2">
@@ -144,6 +156,12 @@ const UsersTable = () => {
                         className="px-4 py-2 rounded-md bg-neutral-900 text-white font-semibold hover:opacity-90"
                       >
                         Editar
+                      </button>
+                       <button
+                        onClick={() => handleDelete(u._id)}
+                        className="px-4 py-2 rounded-md bg-neutral-900 text-white font-semibold hover:opacity-90"
+                      >
+                        Eliminar
                       </button>
                     </div>
                   </td>
@@ -219,8 +237,8 @@ const UsersTable = () => {
             </p>
             <input
               type="password"
-              name="contrasena"
-              value={form.contrasena}
+              name="contraseña"
+              value={form.contraseña}
               onChange={onChange}
               className="w-full border rounded-md p-2 outline-none focus:ring-2 focus:ring-[#59B03C]"
               placeholder=""
