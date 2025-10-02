@@ -1,4 +1,5 @@
 // Dummy data
+/*
 const historialOrdenes = [
   {
     id: 1,
@@ -64,42 +65,5 @@ const historialOrdenes = [
     total: 35,
     empleado: "Manuel Rodríguez",
   },
-];
+];*/
 
-const OrdersHistoryTable = () => {
-  return (
-    <div className="w-full flex flex-col items-center">
-      <div className="w-[90%] overflow-x-auto bg-white border rounded-md shadow-md">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-200 text-left">
-              <th className="p-3">Nombre Cliente</th>
-              <th className="p-3">Fecha y Hora</th>
-              <th className="p-3">Estado</th>
-              <th className="p-3">Total</th>
-              <th className="p-3">Empleado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {historialOrdenes.map((orden) => (
-              <tr
-                key={orden.id}
-                className="border-t hover:bg-gray-100 transition"
-              >
-                <td className="p-3">{orden.cliente}</td>
-                <td className="p-3">
-                  {new Date(orden.fechaHora).toLocaleString("es-MX")}
-                </td>
-                <td className="p-3">{orden.estado}</td>
-                <td className="p-3 font-semibold">${orden.total.toFixed(2)}</td>
-                <td className="p-3">{orden.empleado}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
-
-export default OrdersHistoryTable;
