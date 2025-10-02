@@ -50,10 +50,11 @@ const HistoryPage = () => {
 
 
   return (
-    <div className="w-full flex-1 flex flex-col items-center justify-center">
-      <div className="flex flex-row p-4 w-[90%]">
-        <h2 className="text-2xl font-bold ">Historial de Órdenes</h2>
+    <div className="w-full flex-1 flex flex-col items-center">
+      <div className="flex flex-row p-4 w-[90%] justify-evenly">
+        <h2 className="text-2xl font-bold mx-4">Historial de Órdenes</h2>
         <SearchBox
+          className="px-4"
           value={search}
           onChange={(e) => setSearch(e.target.value)} />
         <select
@@ -75,7 +76,7 @@ const HistoryPage = () => {
           <option value="Alimentos">Alimentos</option>
         </select>
       </div>
-      <div className="w-full flex flex-col items-center">
+      <div className="w-full flex flex-col items-center">  {/* Contenedor principal*/}
         <div className="w-[90%] overflow-x-auto bg-white border rounded-md shadow-md">
           <table className="w-full border-collapse">
             <thead>
