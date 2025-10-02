@@ -13,6 +13,7 @@ import { getProductos, postProducto } from "../services/producto.service";
 import { useQuery } from "@tanstack/react-query";
 import { option } from "framer-motion/client";
 import { getOrdenes } from "../services/orden.service";
+import { obtenerUsuarios } from "../services/usuario.service";
 
 const HistoryPage = () => {
   const {
@@ -23,11 +24,21 @@ const HistoryPage = () => {
     queryKey: ["historial"],
     queryFn: getOrdenes,
   });
+  const {
+    data: usuariosEmpleados,
+    isLoading: loadingUsuariosEmpleados,
+    refetch: refetchUsuariosEmpleados,
+  } = useQuery({
+    queryKey: ["usuariosEmpleados"],
+    queryFn: obtenerUsuarios,
+  });
+
+
 
   const [search, setSearch] = useState("");
   const [showEstado, setShowEstado] = useState("All");
   const [showTotal, setShowTotal] = useState(false);
-  const [showEmpleado, setShowEmpleado] = useState(false);
+  const [showEmpleado, setShowEmpleado] = useState("Empleado");
 
   const ordenesTerminadas =
     historial?.filter((orden) => {
@@ -37,16 +48,22 @@ const HistoryPage = () => {
 
       const matchState =
         showEstado === "All" ? orden.estado === "Completada" || orden.estado === "Cancelada" :
-        orden.estado === showEstado;
+          orden.estado === showEstado;
 
       return matchSearch && matchState;
     }) || [];
 
-  const ordenesCompletadas =
-    historial?.filter((orden) => orden.estado === "Completada") || [];
+  const mostrarUsuarios =
+    usuariosEmpleados?.filter((usuario) => usuario.activo) || []; 
 
-  const ordenesCanceladas =
-    historial?.filter((orden) => orden.estado === "Cancelada") || [];
+  const filtroUsuario =
+    usuariosEmpleados?.filter((usuario) => {
+    const matchState =
+      showEmpleado === "Empleado" ? usuario.id && usuario.activo === true : 
+      usuario.id === parseInt(showEmpleado);
+
+      return matchState;
+    }) || [];
 
 
 
@@ -60,8 +77,8 @@ const HistoryPage = () => {
           onChange={(e) => setSearch(e.target.value)} />
         <select
           className="bg-white border border-black rounded-md p-2 px-4 hover:bg-gray-100 font-semibold"
-          name="categoria"
-          id="categoria"
+          name="estado"
+          id="estado"
           value={showEstado}
           onChange={(e) => setShowEstado(e.target.value)}
         >
@@ -71,12 +88,19 @@ const HistoryPage = () => {
         </select>
         <select
           className="bg-white border border-black rounded-md p-2 px-4 hover:bg-gray-100 font-semibold"
-          name="categoria"
-          id="categoria"
+          name="empleado"
+          id="empleado"
+          value={showEmpleado}
+          onChange={(e) => setShowEmpleado(e.target.value)}
         >
-          <option value="Categoria">Empleado</option>
-          <option value="Bebidas">Bebidas</option>
-          <option value="Alimentos">Alimentos</option>
+          
+          <option value="Empleado">Empleado</option>
+          {mostrarUsuarios.map((usuario) => (
+            <option key={usuario.id} value={usuario.id}>
+              {usuario.nombre}
+            </option>
+          ))}
+
         </select>
       </div>
       <div className="w-full flex flex-col items-center">  {/* Contenedor principal*/}
