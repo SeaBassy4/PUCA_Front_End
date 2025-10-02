@@ -25,6 +25,7 @@ const HistoryPage = () => {
   });
 
   const [search, setSearch] = useState("");
+  const [stateFilter, setStateFilter] = useState("All");
   const [showEstado, setShowEstado] = useState(false);
   const [showTotal, setShowTotal] = useState(false);
   const [showEmpleado, setShowEmpleado] = useState(false);
@@ -35,8 +36,9 @@ const HistoryPage = () => {
         .toLowerCase()
         .includes(search.toLowerCase());
 
-      const matchState = orden.estado === "Cancelada"
-        || orden.estado === "Completada";
+      const matchState =
+        stateFilter === "All" ? orden.estado === "Completada" || orden.estado === "Cancelada" :
+        orden.estado === stateFilter;
 
       return matchSearch && matchState;
     }) || [];
@@ -61,10 +63,12 @@ const HistoryPage = () => {
           className="bg-white border border-black rounded-md p-2 px-4 hover:bg-gray-100 font-semibold"
           name="categoria"
           id="categoria"
+          value={stateFilter}
+          onChange={(e) => setStateFilter(e.target.value)}
         >
-          <option value="Categoria">Estado</option>
-          <option value={ordenesCompletadas}>Completadas</option>
-          <option value={ordenesCanceladas}>Canceladas</option>
+          <option value="All">Estado</option>
+          <option value="Completada">Completadas</option>
+          <option value="Cancelada">Canceladas</option>
         </select>
         <select
           className="bg-white border border-black rounded-md p-2 px-4 hover:bg-gray-100 font-semibold"
