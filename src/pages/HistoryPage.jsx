@@ -44,7 +44,7 @@ const HistoryPage = () => {
   const filteredOrdenes = ordenes.filter((orden) => {
     return (
       orden.nombreCliente.toLowerCase().includes(search.toLowerCase()) &&
-      (orden.estado === selectedState || selectedState === "") &&
+      (selectedState === "" ? orden.estado === "Completada" || orden.estado === "Cancelada" : orden.estado === selectedState) &&
       (orden.idUsuario._id === selectedEmpleado || selectedEmpleado === "")
     );
   });
@@ -69,7 +69,6 @@ const HistoryPage = () => {
           onChange={(e) => setSelectedState(e.target.value)}
         >
           <option value="">Seleccionar</option>
-          <option value="Pendiente">Pendiente</option>
           <option value="Completada">Completada</option>
           <option value="Cancelada">Cancelada</option>
         </select>
