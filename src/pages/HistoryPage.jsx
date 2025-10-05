@@ -61,7 +61,7 @@ const HistoryPage = () => {
   const filteredEmpleados = empleados.filter((empleado) => empleado.activo);
 
   return (
-    <div className="w-full flex-1 flex flex-col items-center">
+    <div className="w-full flex-1 flex flex-col items-center ">
       <div className="flex flex-row p-4 w-[90%] justify-evenly">
         <h2 className="text-2xl font-bold mx-4">Historial de Órdenes</h2>
         <SearchBox
@@ -100,8 +100,10 @@ const HistoryPage = () => {
         {" "}
         {/* Contenedor principal*/}
         <div className="w-[90%] overflow-x-auto bg-white border rounded-md shadow-md">
-          <table className="w-full border-collapse">
-            <thead>
+          <table className="w-full border-collapse max-h-screen overflow-y-auto">
+            <div className="w-full bg-white border rounded-md shadow-md overflow-auto max-h-[70vh] ">
+            <table className="w-full border-collapse">
+              <thead>
               <tr className="bg-gray-200 text-left">
                 <th className="p-3">Nombre Cliente</th>
                 <th className="p-3">Fecha y Hora</th>
@@ -128,6 +130,8 @@ const HistoryPage = () => {
                 </tr>
               ))}
             </tbody>
+            </table>
+            </div>
           </table>
         </div>
       </div>
