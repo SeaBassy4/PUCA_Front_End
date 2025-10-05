@@ -428,6 +428,10 @@ const ProductsPage = () => {
           title={`Editar Producto: ${selectedProduct.nombre}`}
           onDelete={async () => {
             try {
+              const confirmation = window.confirm(
+                "Seguro que desea eliminar este producto?"
+              );
+              if (!confirmation) return;
               const response = await deleteProducto(selectedProduct._id);
               if (response.ok) {
                 toast.success(response.message);
@@ -636,6 +640,10 @@ const ProductsPage = () => {
           }}
           onDelete={async () => {
             try {
+              const confirmation = window.confirm(
+                "Seguro que desea eliminar esta categoría?"
+              );
+              if (!confirmation) return;
               const response = await deleteCategoria(selectedCategory._id);
               if (response.ok) {
                 refetchCategorias();
@@ -758,6 +766,10 @@ const ProductsPage = () => {
           }}
           onDelete={async () => {
             try {
+              const confirmation = window.confirm(
+                "Seguro que desea eliminar este tamaño?"
+              );
+              if (!confirmation) return;
               const response = await deleteTamaño(selectedSize._id);
               if (response.ok) {
                 refetchTamaños();
