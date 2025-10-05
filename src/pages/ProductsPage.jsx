@@ -8,17 +8,29 @@ import InputLabel from "../components/InputLabel";
 import { toast } from "react-toastify";
 import { useState, useEffect } from "react";
 import { uploadImage } from "../services/storage.service";
-import { getCategorias } from "../services/categoria.service";
+import {
+  getCategorias,
+  postCategoria,
+  putCategoria,
+  deleteCategoria,
+} from "../services/categoria.service";
 import {
   getProductos,
   postProducto,
   putProducto,
   deleteProducto,
 } from "../services/producto.service";
+import {
+  getTamaños,
+  putTamaño,
+  postTamaño,
+  deleteTamaño,
+} from "../services/tamaño.service";
 import { useQuery } from "@tanstack/react-query";
 import { option, s } from "framer-motion/client";
 
 const ProductsPage = () => {
+  //Data fetching
   const {
     data: productos,
     isLoading: loadingProductos,
@@ -27,62 +39,103 @@ const ProductsPage = () => {
     queryKey: ["productos"],
     queryFn: getProductos,
   });
-  const { data: categorias, isLoading: loadingCategorias } = useQuery({
+  const {
+    data: categorias,
+    isLoading: loadingCategorias,
+    refetch: refetchCategorias,
+  } = useQuery({
     queryKey: ["categorias"],
     queryFn: getCategorias,
   });
+  const {
+    data: tamaños,
+    isLoading: loadingTamaños,
+    refetch: refetchTamaños,
+  } = useQuery({
+    queryKey: ["tamaños"],
+    queryFn: getTamaños,
+  });
 
+  //modal visibility states
+  const [showModal, setShowModal] = useState({
+    ADD_PRODUCT: false,
+    EDIT_PRODUCT: false,
+    ADD_CATEGORY: false,
+    EDIT_CATEGORY: false,
+    ADD_SIZE: false,
+    EDIT_SIZE: false,
+  });
+
+  //image and product states
   const [selectedFile, setSelectedFile] = useState(null); // archivo real
   const [previewUrl, setPreviewUrl] = useState(null); // preview temporal
-  const [nuevoProducto, setNuevoProducto] = useState({
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [newProduct, setNewProduct] = useState({
     nombre: "",
     precioBase: "",
     idCategoria: "",
     descripcion: "",
     imagenLink: "",
   });
-  const [showModal, setShowModal] = useState({
-    ADD_PRODUCT: false,
-    EDIT_PRODUCT: false,
-  });
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [productosFiltrados, setProductosFiltrados] = useState([]);
-  const [categoriasFiltrados, setCategoriasFiltrados] = useState([]);
-  const [search, setSearch] = useState("");
+
+  //category states
+  const [newCategory, setNewCategory] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  useEffect(() => {
-    console.log("nuevo Producto: ", nuevoProducto);
-  }, [nuevoProducto]);
+  //size states
+  const [newSize, setNewSize] = useState({
+    nombre: "",
+    precioExtra: "",
+  });
+  const [selectedSize, setSelectedSize] = useState(null);
 
+  //filtered lists
+  const [productosFiltrados, setProductosFiltrados] = useState([]);
+  const [categoriasFiltradas, setCategoriasFiltradas] = useState([]);
+  const [tamañosFiltrados, setTamañosFiltrados] = useState([]);
+
+  //filters
+  const [search, setSearch] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState(null);
+
+  //use effects
+
+  //filtrar por categorías activas
   useEffect(() => {
     if (!categorias) return;
-
-    const filtrados = categorias.filter((categoria) => categoria.activo);
-    setCategoriasFiltrados(filtrados);
+    const activos = categorias.filter((categoria) => categoria.activo);
+    setCategoriasFiltradas(activos);
   }, [categorias]);
 
+  //filtrar por tamaños activos
+  useEffect(() => {
+    if (!tamaños) return;
+    const activos = tamaños.filter((tamaño) => tamaño.activo);
+    setTamañosFiltrados(activos);
+  }, [tamaños]);
+
+  //filtrar por productos activos, filtrar por categoría y búsqueda
   useEffect(() => {
     if (!productos) return;
+    let activos = productos?.filter((producto) => producto.activo);
 
-    let filtrados = productos?.filter((producto) => producto.activo);
-
-    if (selectedCategory) {
-      filtrados = filtrados.filter(
-        (producto) => producto.idCategoria === selectedCategory
+    if (selectedFilter) {
+      activos = activos.filter(
+        (producto) => producto.idCategoria === selectedFilter
       );
     }
 
     if (search.trim() !== "") {
       const query = search.toLowerCase();
-      filtrados = filtrados.filter((producto) =>
+      activos = activos.filter((producto) =>
         producto.nombre.toLowerCase().includes(query)
       );
     }
 
-    setProductosFiltrados(filtrados);
-  }, [productos, search, selectedCategory]);
+    setProductosFiltrados(activos);
+  }, [productos, search, selectedFilter]);
 
+  //manejo de preview de imagen al seleccionar un producto
   useEffect(() => {
     setPreviewUrl(selectedProduct?.imagenLink || null);
   }, [selectedProduct]);
@@ -115,7 +168,7 @@ const ProductsPage = () => {
   };
 
   const cleanProductObject = () => {
-    setNuevoProducto({
+    setNewProduct({
       nombre: "",
       precioBase: "",
       descripcion: "",
@@ -144,10 +197,10 @@ const ProductsPage = () => {
               className="bg-white border border-black rounded-md p-2 px-4 hover:bg-gray-100 font-semibold"
               name="categoria"
               id="categoria"
-              value={selectedCategory || ""}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              value={selectedFilter || ""}
+              onChange={(e) => setSelectedFilter(e.target.value)}
             >
-              {categoriasFiltrados.map((categoria) => (
+              {categoriasFiltradas.map((categoria) => (
                 <option key={categoria._id} value={categoria._id}>
                   {categoria.nombre}
                 </option>
@@ -173,7 +226,7 @@ const ProductsPage = () => {
                   onClick={() => {
                     setShowModal({ ...showModal, EDIT_PRODUCT: true });
                     setSelectedProduct(producto);
-                    setNuevoProducto(producto);
+                    setNewProduct(producto);
                   }}
                   title={producto?.nombre}
                   altText={producto?.nombre}
@@ -188,30 +241,60 @@ const ProductsPage = () => {
       <div className="w-full h-full flex flex-col items-center justify-center  ">
         {/* Categoría div*/}
         {/*Botones de categoría*/}
-        <div className="w-[88%] flex flex-col mt-2 border-b-2 borded-black pb-4">
+        <div className="w-[88%]  flex flex-col mt-2 border-b-2 borded-black pb-4">
           <div className="flex flex-row justify-between w-full">
             <span className="font-semibold text-xl">
               Categoría de Productos
             </span>
-            <button className="bg-[#19212D] font-bold text-white text-xl rounded-[5px] px-6 h-11">
+            <button
+              onClick={() => setShowModal({ ...showModal, ADD_CATEGORY: true })}
+              className="bg-[#19212D] font-bold text-white text-xl rounded-[5px] px-6 h-11"
+            >
               Añadir
             </button>
           </div>
-          <OptionBar title="Bebidas"></OptionBar>
-          <OptionBar title="Alimentos"></OptionBar>
+          <div className="max-h-[25vh] overflow-y-auto">
+            {categoriasFiltradas?.map((categoria) => (
+              <OptionBar
+                onClick={() => {
+                  setSelectedCategory(categoria);
+                  setNewCategory(categoria.nombre);
+                  setShowModal({ ...showModal, EDIT_CATEGORY: true });
+                }}
+                key={categoria._id}
+                title={categoria.nombre}
+              ></OptionBar>
+            ))}
+          </div>
         </div>
         {/* tamaño de bebida div*/}
         {/*Botones de tamaños bebidas*/}
         <div className="w-[88%] flex flex-col mt-2 border-b-2 borded-black pb-4">
           <div className="flex flex-row justify-between w-full">
             <span className="font-semibold text-xl">Tamaño de Bebidas</span>
-            <button className="bg-[#19212D] font-bold text-white text-xl rounded-[5px] px-6 h-11">
+            <button
+              onClick={() => setShowModal({ ...showModal, ADD_SIZE: true })}
+              className="bg-[#19212D] font-bold text-white text-xl rounded-[5px] px-6 h-11"
+            >
               Añadir
             </button>
           </div>
-          <OptionBar title="Chico"></OptionBar>
-          <OptionBar title="Mediano"></OptionBar>
-          <OptionBar title="Grande"></OptionBar>
+          <div className="max-h-[25vh] overflow-y-auto">
+            {tamañosFiltrados?.map((tamaño) => (
+              <OptionBar
+                onClick={() => {
+                  setSelectedSize(tamaño);
+                  setNewSize({
+                    nombre: tamaño.nombre,
+                    precioExtra: tamaño.precioExtra,
+                  });
+                  setShowModal({ ...showModal, EDIT_SIZE: true });
+                }}
+                key={tamaño._id}
+                title={tamaño.nombre}
+              ></OptionBar>
+            ))}
+          </div>
         </div>
       </div>
       {showModal.ADD_PRODUCT && (
@@ -223,14 +306,14 @@ const ProductsPage = () => {
           title="Añadir Producto"
           onConfirm={async () => {
             try {
-              if (!validateProduct(nuevoProducto)) return;
+              if (!validateProduct(newProduct)) return;
               const supabaseUrl = await uploadImage(selectedFile);
               if (!supabaseUrl) {
                 toast.error("Error al subir la imagen");
                 return;
               }
               const productWithImage = {
-                ...nuevoProducto,
+                ...newProduct,
                 imagenLink: supabaseUrl,
               };
 
@@ -257,9 +340,9 @@ const ProductsPage = () => {
               classNames="w-full"
               title="Nombre Producto"
               onChange={(e) => {
-                setNuevoProducto({ ...nuevoProducto, nombre: e.target.value });
+                setNewProduct({ ...newProduct, nombre: e.target.value });
               }}
-              value={nuevoProducto.nombre}
+              value={newProduct.nombre}
               placeholder="Ingrese el nombre..."
             />
             <InputLabel
@@ -267,12 +350,12 @@ const ProductsPage = () => {
               title="Precio"
               onChange={(e) => {
                 const onlyNumbers = e.target.value.replace(/\D/g, "");
-                setNuevoProducto({
-                  ...nuevoProducto,
+                setNewProduct({
+                  ...newProduct,
                   precioBase: onlyNumbers,
                 });
               }}
-              value={nuevoProducto.precioBase}
+              value={newProduct.precioBase}
               placeholder="Ingrese el precio..."
             />
           </div>
@@ -282,10 +365,10 @@ const ProductsPage = () => {
               className="border border-gray-300 rounded-md p-2"
               name="categoria"
               id="categoria"
-              value={nuevoProducto.idCategoria || ""}
+              value={newProduct.idCategoria || ""}
               onChange={(e) =>
-                setNuevoProducto({
-                  ...nuevoProducto,
+                setNewProduct({
+                  ...newProduct,
                   idCategoria: e.target.value,
                 })
               }
@@ -303,12 +386,12 @@ const ProductsPage = () => {
             classNames="w-full mb-4"
             title="Descripción"
             onChange={(e) => {
-              setNuevoProducto({
-                ...nuevoProducto,
+              setNewProduct({
+                ...newProduct,
                 descripcion: e.target.value,
               });
             }}
-            value={nuevoProducto.descripcion}
+            value={newProduct.descripcion}
             placeholder="Ingrese la descripción..."
           />
           <div className="flex flex-row w-full justify-between">
@@ -360,7 +443,7 @@ const ProductsPage = () => {
           }}
           onConfirm={async () => {
             try {
-              if (!validateProduct(nuevoProducto)) return;
+              if (!validateProduct(newProduct)) return;
 
               var supabaseUrl = selectedProduct.imagenLink;
               if (selectedFile) {
@@ -372,7 +455,7 @@ const ProductsPage = () => {
               }
 
               const productWithImage = {
-                ...nuevoProducto,
+                ...newProduct,
                 imagenLink: supabaseUrl,
               };
 
@@ -403,9 +486,9 @@ const ProductsPage = () => {
               classNames="w-full"
               title="Nombre Producto"
               onChange={(e) => {
-                setNuevoProducto({ ...nuevoProducto, nombre: e.target.value });
+                setNewProduct({ ...newProduct, nombre: e.target.value });
               }}
-              value={nuevoProducto.nombre}
+              value={newProduct.nombre}
               placeholder="Ingrese el nombre..."
             />
             <InputLabel
@@ -413,12 +496,12 @@ const ProductsPage = () => {
               title="Precio"
               onChange={(e) => {
                 const onlyNumbers = e.target.value.replace(/\D/g, "");
-                setNuevoProducto({
-                  ...nuevoProducto,
+                setNewProduct({
+                  ...newProduct,
                   precioBase: onlyNumbers,
                 });
               }}
-              value={nuevoProducto.precioBase}
+              value={newProduct.precioBase}
               placeholder="Ingrese el precio..."
             />
           </div>
@@ -428,10 +511,10 @@ const ProductsPage = () => {
               className="border border-gray-300 rounded-md p-2"
               name="categoria"
               id="categoria"
-              value={nuevoProducto.idCategoria || ""}
+              value={newProduct.idCategoria || ""}
               onChange={(e) =>
-                setNuevoProducto({
-                  ...nuevoProducto,
+                setNewProduct({
+                  ...newProduct,
                   idCategoria: e.target.value,
                 })
               }
@@ -449,12 +532,12 @@ const ProductsPage = () => {
             classNames="w-full mb-4"
             title="Descripción"
             onChange={(e) => {
-              setNuevoProducto({
-                ...nuevoProducto,
+              setNewProduct({
+                ...newProduct,
                 descripcion: e.target.value,
               });
             }}
-            value={nuevoProducto.descripcion}
+            value={newProduct.descripcion}
             placeholder="Ingrese la descripción..."
           />
           <div className="flex flex-row w-full justify-between">
@@ -478,6 +561,236 @@ const ProductsPage = () => {
               className="w-30 h-30 m-5"
               src={previewUrl || selectedProduct.imagenLink}
               alt="placeholder image"
+            />
+          </div>
+        </Modal>
+      )}
+      {showModal.ADD_CATEGORY && (
+        <Modal
+          title="Añadir Categoría"
+          onClose={() => {
+            setShowModal({ ...showModal, ADD_CATEGORY: false });
+            setNewCategory("");
+          }}
+          onConfirm={async () => {
+            try {
+              if (!newCategory) {
+                toast.warning("Por favor, complete el nombre de la categoría.");
+                return;
+              }
+              const response = await postCategoria({ nombre: newCategory });
+
+              if (response.ok) {
+                refetchCategorias();
+                toast.success(response.message);
+                setNewCategory("");
+                setShowModal({ ...showModal, ADD_CATEGORY: false });
+              } else {
+                toast.error(response.message);
+              }
+            } catch (error) {
+              toast.error(error.message);
+            }
+          }}
+        >
+          <p>Indique el nombre de la nueva categoría a añadir</p>
+          <div className="mt-4 w-full">
+            <InputLabel
+              classNames="w-full mb-4"
+              title="Nombre"
+              onChange={(e) => {
+                setNewCategory(e.target.value);
+              }}
+              value={newCategory}
+              placeholder="Ingrese el nombre de la categoría..."
+            />
+          </div>
+        </Modal>
+      )}
+      {showModal.EDIT_CATEGORY && selectedCategory && (
+        <Modal
+          onClose={() => {
+            setShowModal({ ...showModal, EDIT_CATEGORY: false });
+            setNewCategory("");
+          }}
+          title={`Editar Categoría: ${selectedCategory.nombre}`}
+          onConfirm={async () => {
+            try {
+              if (!newCategory) {
+                toast.warning("Por favor, complete el nombre de la categoría.");
+                return;
+              }
+              const response = await putCategoria(selectedCategory._id, {
+                nombre: newCategory,
+              });
+
+              if (response.ok) {
+                refetchCategorias();
+                toast.success(response.message);
+                setNewCategory("");
+                setShowModal({ ...showModal, EDIT_CATEGORY: false });
+              } else {
+                toast.error(response.message);
+              }
+            } catch (error) {}
+          }}
+          onDelete={async () => {
+            try {
+              const response = await deleteCategoria(selectedCategory._id);
+              if (response.ok) {
+                refetchCategorias();
+                toast.success(response.message);
+                setShowModal({ ...showModal, EDIT_CATEGORY: false });
+              } else {
+                toast.error(response.message);
+              }
+            } catch (error) {
+              toast.error(error.message);
+            }
+          }}
+        >
+          <p>Aquí podrá editar la categoría o eliminarla</p>
+          <div className="mt-4 w-full">
+            <InputLabel
+              classNames="w-full mb-4"
+              title="Nombre"
+              onChange={(e) => {
+                setNewCategory(e.target.value);
+              }}
+              value={newCategory}
+              placeholder="Ingrese el nombre de la categoría..."
+            />
+          </div>
+        </Modal>
+      )}
+      {showModal.ADD_SIZE && (
+        <Modal
+          title="Añadir Tamaño"
+          onClose={() => {
+            setShowModal({ ...showModal, ADD_SIZE: false });
+            setNewSize({ nombre: "", precioExtra: "" });
+          }}
+          onConfirm={async () => {
+            try {
+              if (!newSize.nombre || !newSize.precioExtra) {
+                toast.warning(
+                  "Por favor, indique el nombre y el precio extra del tamaño."
+                );
+                return;
+              }
+
+              const response = await postTamaño({
+                nombre: newSize.nombre,
+                precioExtra: newSize.precioExtra,
+              });
+
+              if (response.ok) {
+                refetchTamaños();
+                toast.success(response.message);
+                setNewSize({ nombre: "", precioExtra: "" });
+                setShowModal({ ...showModal, ADD_SIZE: false });
+              } else {
+                toast.error(response.message);
+              }
+            } catch (error) {
+              toast.error(error.message);
+            }
+          }}
+        >
+          <p>
+            Indique el nombre del tamaño que añadirá junto con su costo extra
+          </p>
+          <div className="mt-4 w-full">
+            <InputLabel
+              classNames="w-full mb-4"
+              title="Nombre"
+              onChange={(e) => {
+                setNewSize({ ...newSize, nombre: e.target.value });
+              }}
+              value={newSize.nombre}
+              placeholder="Ingrese el nombre del tamaño..."
+            />
+            <InputLabel
+              classNames="w-full mb-4"
+              title="Precio Extra"
+              onChange={(e) => {
+                const onlyNumbers = e.target.value.replace(/\D/g, "");
+                setNewSize({ ...newSize, precioExtra: onlyNumbers });
+              }}
+              value={newSize.precioExtra}
+              placeholder="Ingrese el precio extra..."
+            />
+          </div>
+        </Modal>
+      )}
+      {showModal.EDIT_SIZE && selectedSize && (
+        <Modal
+          title={`Editar Tamaño: ${selectedSize.nombre}`}
+          onClose={() => {
+            setShowModal({ ...showModal, EDIT_SIZE: false });
+            setNewSize({ nombre: "", precioExtra: "" });
+          }}
+          onConfirm={async () => {
+            try {
+              if (!newSize.nombre || !newSize.precioExtra) {
+                toast.warning(
+                  "Por favor, indique el nombre y el precio extra del tamaño."
+                );
+                return;
+              }
+
+              const response = await putTamaño(selectedSize._id, {
+                nombre: newSize.nombre,
+                precioExtra: newSize.precioExtra,
+              });
+
+              if (response.ok) {
+                refetchTamaños();
+                toast.success(response.message);
+                setNewSize({ nombre: "", precioExtra: "" });
+                setShowModal({ ...showModal, EDIT_SIZE: false });
+              } else {
+                toast.error(response.message);
+              }
+            } catch (error) {
+              toast.error(error.message);
+            }
+          }}
+          onDelete={async () => {
+            try {
+              const response = await deleteTamaño(selectedSize._id);
+              if (response.ok) {
+                refetchTamaños();
+                toast.success(response.message);
+                setShowModal({ ...showModal, EDIT_SIZE: false });
+              } else {
+                toast.error(response.message);
+              }
+            } catch (error) {
+              toast.error(error.message);
+            }
+          }}
+        >
+          <p>Aquí podrá modificar el tamaño seleccionado o eliminarlo.</p>
+          <div className="mt-4 w-full">
+            <InputLabel
+              classNames="w-full mb-4"
+              title="Nombre"
+              onChange={(e) => {
+                setNewSize({ ...newSize, nombre: e.target.value });
+              }}
+              value={newSize.nombre}
+              placeholder="Ingrese el nombre..."
+            />
+            <InputLabel
+              classNames="w-full mb-4"
+              title="Precio Extra"
+              onChange={(e) => {
+                const onlyNumbers = e.target.value.replace(/\D/g, "");
+                setNewSize({ ...newSize, precioExtra: onlyNumbers });
+              }}
+              value={newSize.precioExtra}
+              placeholder="Ingrese el precio extra..."
             />
           </div>
         </Modal>
