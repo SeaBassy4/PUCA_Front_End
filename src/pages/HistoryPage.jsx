@@ -41,10 +41,19 @@ const HistoryPage = () => {
     return <div>Cargando...</div>;
   }
 
-  const filteredOrdenes = ordenes.filter((orden) => {
+  const sortedOrdenes = [...ordenes].sort((firstOrden, lastOrden) => {
+    const firstOrdenTime = new Date(firstOrden.fechaHora).getTime();
+    const lastOrdenTime = new Date(lastOrden.fechaHora).getTime();
+    return firstOrdenTime - lastOrdenTime;
+  }); {/*first y lastorden toma la orden mas antigua y la mas reciente, Time indica que esta tomando 
+    la fecha de estas ordenes, en el return simplemnte hace la resta para ver cual es la más antigua*/ }
+    
+
+  const filteredOrdenes = sortedOrdenes.filter((orden) => {
     return (
       orden.nombreCliente.toLowerCase().includes(search.toLowerCase()) &&
-      (orden.estado === selectedState || selectedState === "") &&
+      (selectedState === "" ? 
+        orden.estado === "Completada" || orden.estado === "Cancelada" : orden.estado === selectedState) &&
       (orden.idUsuario._id === selectedEmpleado || selectedEmpleado === "")
     );
   });
@@ -69,7 +78,6 @@ const HistoryPage = () => {
           onChange={(e) => setSelectedState(e.target.value)}
         >
           <option value="">Seleccionar</option>
-          <option value="Pendiente">Pendiente</option>
           <option value="Completada">Completada</option>
           <option value="Cancelada">Cancelada</option>
         </select>
