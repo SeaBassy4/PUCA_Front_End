@@ -28,6 +28,7 @@ import {
 } from "../services/tamaño.service";
 import { useQuery } from "@tanstack/react-query";
 import { option, s } from "framer-motion/client";
+import Swal from "sweetalert2";
 
 const ProductsPage = () => {
   //Data fetching
@@ -183,9 +184,9 @@ const ProductsPage = () => {
     <main className="flex w-full max-h-screen">
       <div className="w-2/3 h-full flex items-center justify-center">
         <div className="p-10 w-3xl flex flex-row flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-row p-4 w-full bg-[#59B03C] rounded-md justify-evenly">
-            <h2 className="font-semibold text-xl text-white">
-              Productos en Venta
+          <div className="flex flex-row w-full bg-[#59B03C] rounded-md justify-evenly p-4">
+            <h2 className="text-white font-bold text-xl text-center items-center flex">
+              Productos
             </h2>
             <SearchBox
               value={search}
@@ -194,7 +195,7 @@ const ProductsPage = () => {
               }}
             />
             <select
-              className="bg-white border border-black rounded-md p-2 px-4 hover:bg-gray-100 font-semibold"
+              className="bg-white border w-[160px] border-black rounded-md p-2 px-4 hover:bg-gray-100 font-semibold"
               name="categoria"
               id="categoria"
               value={selectedFilter || ""}
@@ -321,7 +322,13 @@ const ProductsPage = () => {
 
               if (response.ok) {
                 refetchProductos();
-                toast.success(response.message);
+                Swal.fire({
+                  icon: "success",
+                  title: "¡Producto agregado!",
+                  text: response.message,
+                  timer: 2000,
+                  showConfirmButton: false,
+                });
                 cleanProductObject();
                 setShowModal({ ...showModal, ADD_PRODUCT: false });
               } else {
@@ -434,7 +441,13 @@ const ProductsPage = () => {
               if (!confirmation) return;
               const response = await deleteProducto(selectedProduct._id);
               if (response.ok) {
-                toast.success(response.message);
+                Swal.fire({
+                  icon: "success",
+                  title: "¡Producto Eliminado!",
+                  text: response.message,
+                  timer: 2000,
+                  showConfirmButton: false,
+                });
                 setShowModal({ ...showModal, EDIT_PRODUCT: false });
                 cleanProductObject();
                 refetchProductos();
@@ -469,7 +482,13 @@ const ProductsPage = () => {
               );
 
               if (response.ok) {
-                toast.success(response.message);
+                Swal.fire({
+                  icon: "success",
+                  title: "¡Producto Actualizado!",
+                  text: response.message,
+                  timer: 2000,
+                  showConfirmButton: false,
+                });
                 setShowModal({ ...showModal, EDIT_PRODUCT: false });
                 cleanProductObject();
                 refetchProductos();
@@ -586,7 +605,13 @@ const ProductsPage = () => {
 
               if (response.ok) {
                 refetchCategorias();
-                toast.success(response.message);
+                Swal.fire({
+                  icon: "success",
+                  title: "¡Categoría agregada!",
+                  text: response.message,
+                  timer: 2000,
+                  showConfirmButton: false,
+                });
                 setNewCategory("");
                 setShowModal({ ...showModal, ADD_CATEGORY: false });
               } else {
@@ -630,7 +655,13 @@ const ProductsPage = () => {
 
               if (response.ok) {
                 refetchCategorias();
-                toast.success(response.message);
+                Swal.fire({
+                  icon: "success",
+                  title: "¡Categoría actualizada!",
+                  text: response.message,
+                  timer: 2000,
+                  showConfirmButton: false,
+                });
                 setNewCategory("");
                 setShowModal({ ...showModal, EDIT_CATEGORY: false });
               } else {
@@ -647,7 +678,13 @@ const ProductsPage = () => {
               const response = await deleteCategoria(selectedCategory._id);
               if (response.ok) {
                 refetchCategorias();
-                toast.success(response.message);
+                Swal.fire({
+                  icon: "success",
+                  title: "¡Categoría eliminada!",
+                  text: response.message,
+                  timer: 2000,
+                  showConfirmButton: false,
+                });
                 setShowModal({ ...showModal, EDIT_CATEGORY: false });
               } else {
                 toast.error(response.message);
@@ -694,7 +731,13 @@ const ProductsPage = () => {
 
               if (response.ok) {
                 refetchTamaños();
-                toast.success(response.message);
+                Swal.fire({
+                  icon: "success",
+                  title: "¡Tamaño agregado!",
+                  text: response.message,
+                  timer: 2000,
+                  showConfirmButton: false,
+                });
                 setNewSize({ nombre: "", precioExtra: "" });
                 setShowModal({ ...showModal, ADD_SIZE: false });
               } else {
@@ -754,7 +797,13 @@ const ProductsPage = () => {
 
               if (response.ok) {
                 refetchTamaños();
-                toast.success(response.message);
+                Swal.fire({
+                  icon: "success",
+                  title: "¡Tamaño actualizado!",
+                  text: response.message,
+                  timer: 2000,
+                  showConfirmButton: false,
+                });
                 setNewSize({ nombre: "", precioExtra: "" });
                 setShowModal({ ...showModal, EDIT_SIZE: false });
               } else {
@@ -773,7 +822,13 @@ const ProductsPage = () => {
               const response = await deleteTamaño(selectedSize._id);
               if (response.ok) {
                 refetchTamaños();
-                toast.success(response.message);
+                Swal.fire({
+                  icon: "success",
+                  title: "¡Tamaño eliminado!",
+                  text: response.message,
+                  timer: 2000,
+                  showConfirmButton: false,
+                });
                 setShowModal({ ...showModal, EDIT_SIZE: false });
               } else {
                 toast.error(response.message);
