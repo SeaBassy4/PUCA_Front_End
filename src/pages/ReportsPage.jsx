@@ -19,7 +19,6 @@ const ReportsPage = () => {
 
   //use states
   const [ordenesFiltradas, setOrdenesFiltradas] = useState([]);
-  const [detalleOrdenesFiltradas, setDetalleOrdenesFiltradas] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [opcionesSeleccionadas, setOpcionesSeleccionadas] = useState({
     numeroOrden: false,
@@ -32,23 +31,21 @@ const ReportsPage = () => {
   useEffect(() => {
     if (!selectedDate || !ordenes || !detalleOrdenes) return;
 
-    const nuevasOrdenes = ordenes.filter((orden) => {
+    const ordenesFechaSeleccionada = ordenes.filter((orden) => {
       const fechaOrden = new Date(orden.fechaHora).toLocaleDateString("es-ES");
       return fechaOrden === selectedDate;
     });
-    setOrdenesFiltradas(nuevasOrdenes);
+    setOrdenesFiltradas(ordenesFechaSeleccionada);
+    console.log("ordenes de fecha seleccionada ", ordenesFechaSeleccionada);
 
-    const nuevasDetallesOrdenes = detalleOrdenes.filter((detalleOrden) => {
-      const matchingIdOrden = nuevasOrdenes.find(
-        (orden) => orden._id === detalleOrden.idOrden
+    //ahora de acuerdo a esas ordenes de la fecha correspondiente fiiltramos
+    //los detalles de orden
+    const detallesFiltrados = detalleOrdenes.filter((detalle) => {
+      return ordenesFechaSeleccionada.some(
+        (orden) => orden._id === detalle.idOrden
       );
-      return matchingIdOrden?._id === detalleOrden.idOrden;
     });
-
-    setDetalleOrdenesFiltradas(nuevasDetallesOrdenes);
-
-    console.log("detalles ordenes filtradas ", nuevasDetallesOrdenes);
-    console.log("ordenes filtradas ", nuevasOrdenes);
+    console.log("detalles filtrados de fecha seleccionada", detallesFiltrados);
   }, [selectedDate]);
 
   //fechas ultimos 30 dias
