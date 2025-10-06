@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import SearchBox from "../components/SearchBox";
 import Modal from "../components/Modal";
+import Swal from "sweetalert2";
+
 import {
   getUsuarios as obtenerUsuarios,
   postUsuario as crearUsuario,
   putUsuario as actualizarUsuario,
   deleteUsuario as deletearUsuario,
 } from "../services/usuario.service";
+
 
 const UsersTable = () => {
   const [usuarios, setUsuarios] = useState([]); //array dinamico, almacena la lista del backend
@@ -25,6 +28,8 @@ const UsersTable = () => {
     contraseña: "",
     rol: "",
   });
+
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const fetchUsuarios = async () => {
@@ -52,7 +57,53 @@ const UsersTable = () => {
     if (action === "add") {
       setForm({ nombre: "", celular: "", correo: "", contraseña: "", rol: "" });
     }
+    setErrors({});
   }, [action, selectedUser]);
+
+
+const validate = () => {
+  let newErrors = {};
+
+  //Validar nombre
+  if (!form.nombre.trim()) {
+    newErrors.nombre = "El nombre es obligatorio";
+  } else if (form.nombre.trim().length < 2) {
+    newErrors.nombre = "Debe tener al menos 2 caracteres";
+  }
+
+  //Validar celular
+  if (!form.celular.trim()) {
+    newErrors.celular = "El celular es obligatorio";
+  } else if (!/^[0-9]+$/.test(form.celular)) {
+    newErrors.celular = "Solo números permitidos";
+  } else if (form.celular.length < 10) {
+    newErrors.celular = "Debe tener al menos 10 dígitos";
+  }
+
+  //Validar correo
+  if (!form.correo.trim()) {
+    newErrors.correo = "El correo es obligatorio";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.correo)) {
+    newErrors.correo = "Correo no válido";
+  }
+
+  //Validar contraseña 
+  if (action === "add") {
+    if (!form.contraseña.trim()) {
+      newErrors.contraseña = "La contraseña es obligatoria";
+    }
+  }
+
+  //Validar rol
+  if (!form.rol.trim()) {
+    newErrors.rol = "El rol es obligatorio";
+  } else if (/\d/.test(form.rol)) {
+    newErrors.rol = "El rol no debe contener números";
+  }
+
+  return newErrors;
+};
+
 
   const handleAdd = () => {
     setAction("add");
@@ -67,39 +118,88 @@ const UsersTable = () => {
   };
 
   const handleConfirm = async () => {
-    try {
-      if (action === "add") {
-        await crearUsuario(form); //llamada al post del usuario.service.js
-      } else if (action === "edit" && selectedUser) {
-        await actualizarUsuario(selectedUser._id, form); //put
-      }
-      const updatedList = await obtenerUsuarios(); //refresh a la tabla
-      setUsuarios(updatedList);
-      setShowModal(false);
-    } catch (err) {
-      console.error("Peto el guardar usuario", err);
+    const newErrors = validate();
+    if(Object.keys(newErrors).length > 0){
+      setErrors(newErrors);
+      return; //no continua si extiste algun error
     }
-  };
 
-  const handleDelete = async (id) => {
-    if (
-      !window.confirm(
-        "¿Estas completamente eguro que quieres eliminar este usuario?"
-      )
-    )
-      return;
-    try {
-      await deletearUsuario(id); //delete
-      setUsuarios((prev) => prev.filter((u) => u._id !== id));
-    } catch (err) {
-      console.error("Peto:", err);
+      try {
+    if (action === "add") {
+      await crearUsuario(form);
+      Swal.fire({
+        icon: "success",
+        title: "¡Usuario agregado!",
+        text: "El usuario se ha agregado correctamente.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } else if (action === "edit" && selectedUser) {
+      await actualizarUsuario(selectedUser._id, form);
+      Swal.fire({
+        icon: "success",
+        title: "¡Usuario actualizado!",
+        text: "Los cambios se han guardado correctamente.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     }
-  };
 
-  const onChange = (e) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-  };
+    const updatedList = await obtenerUsuarios();
+    setUsuarios(updatedList);
+    setShowModal(false);
+  } catch (err) {
+    console.error("Error al guardar usuario:", err);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "No se pudo guardar el usuario. Intenta de nuevo.",
+    });
+  }
+};
+
+ const handleDelete = async (id) => {
+  const result = await Swal.fire({
+    title: "¿Estás seguro?",
+    text: "Esta acción eliminará el usuario.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "rgba(85, 146, 77, 1)",
+    cancelButtonColor: "rgba(85, 146, 77, 1)",
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar",
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    await deletearUsuario(id);
+    setUsuarios((prev) => prev.filter((u) => u._id !== id));
+    Swal.fire({
+      icon: "success",
+      title: "Usuario eliminado",
+      text: "El usuario se eliminó correctamente.",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  } catch (err) {
+    console.error("Error al eliminar:", err);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "No se pudo eliminar el usuario. Intenta de nuevo.",
+    });
+  }
+};
+
+
+ const onChange = (e) => {
+  const { name, value } = e.target;
+  setForm((prev) => ({ ...prev, [name]: value }));
+  if (errors[name]) {
+    setErrors((prev) => ({ ...prev, [name]: "" })); 
+  }
+};
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -126,7 +226,7 @@ const UsersTable = () => {
 
       {/*Tablita*/}
       <div className="w-[90%] mt-3 border rounded-xl shadow-sm p-4 bg-white">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-auto max-h-[400px]">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-200 text-left rounded-md">
@@ -201,9 +301,14 @@ const UsersTable = () => {
                 name="nombre"
                 value={form.nombre}
                 onChange={onChange}
-                className="w-full border rounded-md p-2 outline-none focus:ring-2 focus:ring-[#59B03C]"
-                placeholder=""
+                className={`w-full border rounded-md p-2 outline-none focus:ring-2 ${
+                  errors.celular ? "border-red-500" : "border-gray-300 focus:ring-[#59B03C]"
+                }`}
               />
+              {errors.nombre && (
+                <p className="text-red-500 text-sm mt-1">{errors.nombre}</p>
+              )}
+
             </div>
 
             <div>
@@ -212,9 +317,13 @@ const UsersTable = () => {
                 name="celular"
                 value={form.celular}
                 onChange={onChange}
-                className="w-full border rounded-md p-2 outline-none focus:ring-2 focus:ring-[#59B03C]"
-                placeholder=""
+                className={`w-full border rounded-md p-2 outline-none focus:ring-2 ${
+                  errors.celular ? "border-red-500" : "border-gray-300 focus:ring-[#59B03C]"
+                }`}
               />
+              {errors.celular && (
+                <p className="text-red-500 text-sm mt-1">{errors.celular}</p>
+              )}
             </div>
           </div>
 
@@ -226,11 +335,18 @@ const UsersTable = () => {
               name="correo"
               value={form.correo}
               onChange={onChange}
-              className="w-full border rounded-md p-2 outline-none focus:ring-2 focus:ring-[#59B03C]"
-              placeholder=""
+              className={`w-full border rounded-md p-2 outline-none focus:ring-2 ${
+                errors.correo ? "border-red-500" : "border-gray-300 focus:ring-[#59B03C]"
+              }`}
             />
+            {errors.correo && (
+              <p className="text-red-500 text-sm mt-1">{errors.correo}</p>
+            )}
           </div>
 
+
+          {/* Contraseña */}
+            {action === "add" && (
           <div className="mt-4">
             <label className="block font-semibold mb-1">
               Contraseña Inicial
@@ -244,26 +360,40 @@ const UsersTable = () => {
               name="contraseña"
               value={form.contraseña}
               onChange={onChange}
-              className="w-full border rounded-md p-2 outline-none focus:ring-2 focus:ring-[#59B03C]"
-              placeholder=""
+              className={`w-full border rounded-md p-2 outline-none focus:ring-2 ${
+                  errors.contraseña
+                    ? "border-red-500"
+                    : "border-gray-300 focus:ring-[#59B03C]"
+                }`}
             />
+            {errors.contraseña && (
+              <p className="text-red-500 text-sm mt-1" >{errors.contraseña} </p>)}
           </div>
+            )}
 
           {/*Rol*/}
           <div className="mt-4">
-            <label className="block font-semibold mb-1">Rol</label>
+          <label className="block font-semibold mb-1">Rol</label>
 
-            <input
-              name="rol"
-              value={form.rol}
-              onChange={onChange}
-              className="w-full border rounded-md p-2 outline-none focus:ring-2 focus:ring-[#59B03C]"
-              placeholder=""
-            />
-          </div>
+          <select
+            name="rol"
+            value={form.rol}
+            onChange={onChange}
+            className={`w-full border rounded-md p-2 outline-none focus:ring-2 ${
+              errors.rol ? "border-red-500" : "border-gray-300 focus:ring-[#59B03C]"
+            }`}
+          >
+            <option value="">Selecciona un rol</option>
+            <option value="Administrador">Administrador</option>
+            <option value="Empleado">Empleado</option>
+          </select>
+
+          {errors.rol && <p className="text-red-500 text-sm mt-1">{errors.rol}</p>}
+        </div>
+
         </Modal>
       )}
-    </div>
+    </div>  
   );
 };
 
