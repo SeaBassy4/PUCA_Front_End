@@ -4,6 +4,8 @@ import { select } from "framer-motion/client";
 import { useQuery } from "@tanstack/react-query";
 import { getOrdenes } from "../services/orden.service";
 import { getDetalleOrdenes } from "../services/detalle-orden.service";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const ReportsPage = () => {
   //data fetching
@@ -19,13 +21,29 @@ const ReportsPage = () => {
 
   //use states
   const [ordenesFiltradas, setOrdenesFiltradas] = useState([]);
+  const [detallesOrdenesFiltradas, setDetallesOrdenesFiltradas] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [opcionesSeleccionadas, setOpcionesSeleccionadas] = useState({
-    numeroOrden: false,
-    nombreCliente: false,
-    cajeroEnTurno: false,
-    horaTransaccion: false,
-    estadoOrden: false,
+    numeroOrden: {
+      title: "Número Orden",
+      value: true,
+    },
+    nombreCliente: {
+      title: "Nombre Cliente",
+      value: true,
+    },
+    cajeroEnTurno: {
+      title: "Cajero",
+      value: true,
+    },
+    horaTransaccion: {
+      title: "Hora Transacción",
+      value: true,
+    },
+    estadoOrden: {
+      title: "Estado Orden",
+      value: true,
+    },
   });
 
   useEffect(() => {
@@ -46,7 +64,12 @@ const ReportsPage = () => {
       );
     });
     console.log("detalles filtrados de fecha seleccionada", detallesFiltrados);
+    setDetallesOrdenesFiltradas(detallesFiltrados);
   }, [selectedDate]);
+
+  useEffect(() => {
+    console.log("opciones seleccionadas", opcionesSeleccionadas);
+  }, [opcionesSeleccionadas]);
 
   //fechas ultimos 30 dias
   const generarFechasUltimos30Dias = () => {
@@ -61,10 +84,65 @@ const ReportsPage = () => {
   };
   const fechas = generarFechasUltimos30Dias();
 
-  //pdf generation logic
-  const generarPDF = () => {
+  /* */
+  const generarPDF = (opcionesSeleccionadas) => {
     if (!selectedDate) return;
-  };
+
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.text(`Reporte Completo - ${selectedDate}`, 14, 15);
+
+    // Usar TODAS las columnas disponibles
+    const headers = Object.keys(opcionesSeleccionadas)
+      .filter((opcionKey) => opcionesSeleccionadas[opcionKey].value)
+      .map((opcionKey) => opcionesSeleccionadas[opcionKey].title);
+
+    const datos = [];
+
+    detallesOrdenesFiltradas.map((detalleOrden) => {
+      const row = [];
+
+      const ordenAsociada = ordenesFiltradas.find(
+        (orden) => orden._id === detalleOrden.idOrden
+      );
+
+      if (opcionesSeleccionadas.numeroOrden.value) {
+        row.push(detalleOrden.idOrden.substring(0, 5));
+      }
+      if (opcionesSeleccionadas.nombreCliente.value) {
+        row.push(
+          ordenAsociada.nombreCliente ? ordenAsociada.nombreCliente : "N/A"
+        );
+      }
+      if (opcionesSeleccionadas.cajeroEnTurno.value) {
+        row.push(
+          ordenAsociada.idUsuario ? ordenAsociada.idUsuario?.nombre : "N/A"
+        );
+      }
+      if (opcionesSeleccionadas.horaTransaccion.value) {
+        row.push(
+          ordenAsociada.fechaHora
+            ? new Date(ordenAsociada.fechaHora).toLocaleTimeString("es-ES")
+            : "N/A"
+        );
+      }
+      if (opcionesSeleccionadas.estadoOrden.value) {
+        row.push(ordenAsociada.estado);
+      }
+
+      datos.push(row);
+    });
+
+    autoTable(doc, {
+      head: [headers],
+      body: datos,
+      startY: 30,
+      styles: { fontSize: 8 },
+    });
+
+    doc.save(`reporte-completo-${selectedDate.replace(/\//g, "-")}.pdf`);
+  }; /* */
 
   return (
     <PageWrapper>
@@ -128,7 +206,10 @@ const ReportsPage = () => {
                     onChange={(e) =>
                       setOpcionesSeleccionadas({
                         ...opcionesSeleccionadas,
-                        numeroOrden: e.target.checked,
+                        numeroOrden: {
+                          ...opcionesSeleccionadas.numeroOrden,
+                          value: e.target.checked,
+                        },
                       })
                     }
                     type="checkbox"
@@ -141,7 +222,10 @@ const ReportsPage = () => {
                     onChange={(e) =>
                       setOpcionesSeleccionadas({
                         ...opcionesSeleccionadas,
-                        nombreCliente: e.target.checked,
+                        nombreCliente: {
+                          ...opcionesSeleccionadas.nombreCliente,
+                          value: e.target.checked,
+                        },
                       })
                     }
                     type="checkbox"
@@ -154,7 +238,10 @@ const ReportsPage = () => {
                     onChange={(e) =>
                       setOpcionesSeleccionadas({
                         ...opcionesSeleccionadas,
-                        cajeroEnTurno: e.target.checked,
+                        cajeroEnTurno: {
+                          ...opcionesSeleccionadas.cajeroEnTurno,
+                          value: e.target.checked,
+                        },
                       })
                     }
                     type="checkbox"
@@ -167,7 +254,10 @@ const ReportsPage = () => {
                     onChange={(e) =>
                       setOpcionesSeleccionadas({
                         ...opcionesSeleccionadas,
-                        horaTransaccion: e.target.checked,
+                        horaTransaccion: {
+                          ...opcionesSeleccionadas.horaTransaccion,
+                          value: e.target.checked,
+                        },
                       })
                     }
                     type="checkbox"
@@ -180,7 +270,10 @@ const ReportsPage = () => {
                     onChange={(e) =>
                       setOpcionesSeleccionadas({
                         ...opcionesSeleccionadas,
-                        estadoOrden: e.target.checked,
+                        estadoOrden: {
+                          ...opcionesSeleccionadas.estadoOrden,
+                          value: e.target.checked,
+                        },
                       })
                     }
                     type="checkbox"
@@ -191,10 +284,54 @@ const ReportsPage = () => {
               </div>
 
               <div className="flex gap-4 mt-6">
-                <button className="px-5 py-2 rounded bg-gray-800 text-white">
+                <button
+                  onClick={() => {
+                    const opcionesPersonalizadas = {
+                      numeroOrden: { ...opcionesSeleccionadas.numeroOrden },
+                      nombreCliente: { ...opcionesSeleccionadas.nombreCliente },
+                      cajeroEnTurno: { ...opcionesSeleccionadas.cajeroEnTurno },
+                      horaTransaccion: {
+                        ...opcionesSeleccionadas.horaTransaccion,
+                      },
+                      estadoOrden: { ...opcionesSeleccionadas.estadoOrden },
+                    };
+
+                    generarPDF(opcionesPersonalizadas);
+                  }}
+                  className="px-5 py-2 rounded bg-gray-800 text-white"
+                >
                   Exportar Selección
                 </button>
-                <button className="px-5 py-2 rounded bg-gray-800 text-white">
+                <button
+                  onClick={() => {
+                    const opcionesTodasTrue = {
+                      numeroOrden: {
+                        ...opcionesSeleccionadas.numeroOrden,
+                        value: true,
+                      },
+                      nombreCliente: {
+                        ...opcionesSeleccionadas.nombreCliente,
+                        value: true,
+                      },
+                      cajeroEnTurno: {
+                        ...opcionesSeleccionadas.cajeroEnTurno,
+                        value: true,
+                      },
+                      horaTransaccion: {
+                        ...opcionesSeleccionadas.horaTransaccion,
+                        value: true,
+                      },
+                      estadoOrden: {
+                        ...opcionesSeleccionadas.estadoOrden,
+                        value: true,
+                      },
+                    };
+
+                    // Pasar directamente el objeto temporal a generarPDF
+                    generarPDF(opcionesTodasTrue);
+                  }}
+                  className="px-5 py-2 rounded bg-gray-800 text-white"
+                >
                   Exportar Todo
                 </button>
               </div>
