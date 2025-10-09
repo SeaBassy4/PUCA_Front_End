@@ -26,23 +26,23 @@ const ReportsPage = () => {
   const [opcionesSeleccionadas, setOpcionesSeleccionadas] = useState({
     numeroOrden: {
       title: "Número Orden",
-      value: true,
+      value: false,
     },
     nombreCliente: {
       title: "Nombre Cliente",
-      value: true,
+      value: false,
     },
     cajeroEnTurno: {
       title: "Cajero",
-      value: true,
+      value: false,
     },
     horaTransaccion: {
       title: "Hora Transacción",
-      value: true,
+      value: false,
     },
     estadoOrden: {
       title: "Estado Orden",
-      value: true,
+      value: false,
     },
   });
 
@@ -85,7 +85,7 @@ const ReportsPage = () => {
   const fechas = generarFechasUltimos30Dias();
 
   /* */
-  const generarPDF = (opcionesSeleccionadas) => {
+  const generarPDF = (opciones) => {
     if (!selectedDate) return;
 
     const doc = new jsPDF();
@@ -94,9 +94,9 @@ const ReportsPage = () => {
     doc.text(`Reporte Completo - ${selectedDate}`, 14, 15);
 
     // Usar TODAS las columnas disponibles
-    const headers = Object.keys(opcionesSeleccionadas)
-      .filter((opcionKey) => opcionesSeleccionadas[opcionKey].value)
-      .map((opcionKey) => opcionesSeleccionadas[opcionKey].title);
+    const headers = Object.keys(opciones)
+      .filter((opcionKey) => opciones[opcionKey].value)
+      .map((opcionKey) => opciones[opcionKey].title);
 
     const datos = [];
 
@@ -107,27 +107,27 @@ const ReportsPage = () => {
         (orden) => orden._id === detalleOrden.idOrden
       );
 
-      if (opcionesSeleccionadas.numeroOrden.value) {
+      if (opciones.numeroOrden.value) {
         row.push(detalleOrden.idOrden.substring(0, 5));
       }
-      if (opcionesSeleccionadas.nombreCliente.value) {
+      if (opciones.nombreCliente.value) {
         row.push(
           ordenAsociada.nombreCliente ? ordenAsociada.nombreCliente : "N/A"
         );
       }
-      if (opcionesSeleccionadas.cajeroEnTurno.value) {
+      if (opciones.cajeroEnTurno.value) {
         row.push(
           ordenAsociada.idUsuario ? ordenAsociada.idUsuario?.nombre : "N/A"
         );
       }
-      if (opcionesSeleccionadas.horaTransaccion.value) {
+      if (opciones.horaTransaccion.value) {
         row.push(
           ordenAsociada.fechaHora
             ? new Date(ordenAsociada.fechaHora).toLocaleTimeString("es-ES")
             : "N/A"
         );
       }
-      if (opcionesSeleccionadas.estadoOrden.value) {
+      if (opciones.estadoOrden.value) {
         row.push(ordenAsociada.estado);
       }
 
