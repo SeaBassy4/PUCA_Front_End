@@ -80,7 +80,11 @@ const ProductsPage = () => {
   });
 
   //category states
-  const [newCategory, setNewCategory] = useState("");
+  const [newCategory, setNewCategory] = useState({
+    nombre: "",
+    imagenLink: "",
+    bannerLink: "",
+  });
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   //size states
@@ -259,7 +263,11 @@ const ProductsPage = () => {
               <OptionBar
                 onClick={() => {
                   setSelectedCategory(categoria);
-                  setNewCategory(categoria.nombre);
+                  setNewCategory({
+                    nombre: categoria.nombre,
+                    imagenLink: categoria.imagenLink,
+                    bannerLink: categoria.bannerLink,
+                  });
                   setShowModal({ ...showModal, EDIT_CATEGORY: true });
                 }}
                 key={categoria._id}
@@ -593,15 +601,25 @@ const ProductsPage = () => {
           title="Añadir Categoría"
           onClose={() => {
             setShowModal({ ...showModal, ADD_CATEGORY: false });
-            setNewCategory("");
+            setNewCategory({ nombre: "", imagenLink: "", bannerLink: "" });
           }}
           onConfirm={async () => {
             try {
-              if (!newCategory) {
-                toast.warning("Por favor, complete el nombre de la categoría.");
+              if (
+                !newCategory.nombre ||
+                !newCategory.imagenLink ||
+                !newCategory.bannerLink
+              ) {
+                toast.warning(
+                  "Por favor, complete todos los campos y seleccione imágenes."
+                );
                 return;
               }
-              const response = await postCategoria({ nombre: newCategory });
+              const response = await postCategoria({
+                nombre: newCategory.nombre,
+                imagenLink: newCategory.imagenLink,
+                bannerLink: newCategory.bannerLink,
+              });
 
               if (response.ok) {
                 refetchCategorias();
@@ -612,7 +630,7 @@ const ProductsPage = () => {
                   timer: 2000,
                   showConfirmButton: false,
                 });
-                setNewCategory("");
+                setNewCategory({ nombre: "", imagenLink: "", bannerLink: "" });
                 setShowModal({ ...showModal, ADD_CATEGORY: false });
               } else {
                 toast.error(response.message);
@@ -628,9 +646,9 @@ const ProductsPage = () => {
               classNames="w-full mb-4"
               title="Nombre"
               onChange={(e) => {
-                setNewCategory(e.target.value);
+                setNewCategory({ ...newCategory, nombre: e.target.value });
               }}
-              value={newCategory}
+              value={newCategory.nombre}
               placeholder="Ingrese el nombre de la categoría..."
             />
           </div>
@@ -640,17 +658,19 @@ const ProductsPage = () => {
         <Modal
           onClose={() => {
             setShowModal({ ...showModal, EDIT_CATEGORY: false });
-            setNewCategory("");
+            setNewCategory({ nombre: "", imagenLink: "", bannerLink: "" });
           }}
           title={`Editar Categoría: ${selectedCategory.nombre}`}
           onConfirm={async () => {
             try {
-              if (!newCategory) {
+              if (!newCategory.nombre) {
                 toast.warning("Por favor, complete el nombre de la categoría.");
                 return;
               }
               const response = await putCategoria(selectedCategory._id, {
-                nombre: newCategory,
+                nombre: newCategory.nombre,
+                bannerLink: newCategory.bannerLink,
+                imagenLink: newCategory.imagenLink,
               });
 
               if (response.ok) {
@@ -662,7 +682,7 @@ const ProductsPage = () => {
                   timer: 2000,
                   showConfirmButton: false,
                 });
-                setNewCategory("");
+                setNewCategory({ nombre: "", imagenLink: "", bannerLink: "" });
                 setShowModal({ ...showModal, EDIT_CATEGORY: false });
               } else {
                 toast.error(response.message);
@@ -700,9 +720,9 @@ const ProductsPage = () => {
               classNames="w-full mb-4"
               title="Nombre"
               onChange={(e) => {
-                setNewCategory(e.target.value);
+                setNewCategory({ ...newCategory, nombre: e.target.value });
               }}
-              value={newCategory}
+              value={newCategory.nombre}
               placeholder="Ingrese el nombre de la categoría..."
             />
           </div>

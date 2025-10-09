@@ -4,6 +4,7 @@ import ProductsPage from "./src/pages/ProductsPage";
 import HistoryPage from "./src/pages/HistoryPage";
 import UsersPage from "./src/pages/UsersPage";
 import ReportsPage from "./src/pages/ReportsPage";
+import CustomerPage from "./src/pages/CustomerPage";
 
 const routes = [
   { path: "/ordenes", element: <OrdersPage /> },
@@ -11,7 +12,8 @@ const routes = [
   { path: "/historial", element: <HistoryPage /> },
   { path: "/usuarios", element: <UsersPage /> },
   { path: "/reportes", element: <ReportsPage /> },
-  { path: "/", element: <OrdersPage/> }
+  { path: "/clientes", element: <CustomerPage /> },
+  { path: "/", element: <OrdersPage /> },
 ];
 
 export default routes;
