@@ -1,0 +1,64 @@
+import { div } from "framer-motion/client";
+import React from "react";
+
+const ProductModal = ({
+  onClose,
+  children,
+  title,
+  type,
+  onConfirm,
+  onDelete,
+  bannerLink,
+}) => {
+  const classes = type === "delete" ? "bg-red-600" : "bg-green-600";
+
+  return (
+    <>
+      <div className="fixed inset-0 bg-black opacity-40 flex items-center justify-center z-40" />
+      <div className="bg-white flex flex-col rounded-md z-50 w-[30%] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg">
+        <img
+          className="w-full max-h-[150px] border border-black object-cover relative top-0 left-0 rounded-t-md"
+          src={bannerLink}
+          alt="food banner"
+        />
+        <div className="p-4">
+          <h2 className="text-2xl font-bold mb-2">{title}</h2>
+          <div>{children}</div>
+          <div className="flex justify-end mt-4">
+            <div
+              onClick={onClose}
+              className="bg-white  cursor-pointer rounded-full px-2 absolute top-2 right-2"
+            >
+              <span className="font-semibold">X</span>
+            </div>
+            {onDelete ? (
+              <div className="flex flex-row gap-5 w-full">
+                <button
+                  onClick={onConfirm}
+                  className={`text-white font-semibold py-2 px-4 rounded-md w-full bg-green-600`}
+                >
+                  Confirm
+                </button>
+                <button
+                  onClick={onDelete}
+                  className={`text-white font-semibold py-2 px-4 rounded-md w-full bg-red-600`}
+                >
+                  Eliminar
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={onConfirm}
+                className={`text-white font-semibold py-2 px-4 rounded-md w-full ${classes}`}
+              >
+                Confirm
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default ProductModal;

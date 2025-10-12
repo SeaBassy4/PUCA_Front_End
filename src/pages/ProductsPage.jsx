@@ -611,6 +611,10 @@ const ProductsPage = () => {
           onClose={() => {
             setShowModal({ ...showModal, ADD_CATEGORY: false });
             setNewCategory({ nombre: "", imagenLink: "", bannerLink: "" });
+            setCategoryFile(null);
+            setCategoryBannerFile(null);
+            setCategoryPreviewUrl(null);
+            setCategoryBannerPreviewUrl(null);
           }}
           onConfirm={async () => {
             try {
@@ -728,7 +732,7 @@ const ProductsPage = () => {
           </div>
           <div className="flex justify-center items-center w-full">
             <img
-              className="w-30 h-30 m-5"
+              className="w-full h-full m-5"
               src={categoryBannerPreviewUrl}
               alt="placeholder image"
             />
@@ -740,6 +744,10 @@ const ProductsPage = () => {
           onClose={() => {
             setShowModal({ ...showModal, EDIT_CATEGORY: false });
             setNewCategory({ nombre: "", imagenLink: "", bannerLink: "" });
+            setCategoryFile(null);
+            setCategoryBannerFile(null);
+            setCategoryPreviewUrl(null);
+            setCategoryBannerPreviewUrl(null);
           }}
           title={`Editar Categoría: ${selectedCategory.nombre}`}
           onConfirm={async () => {
@@ -891,7 +899,7 @@ const ProductsPage = () => {
             </div>
             <div className="flex justify-center items-center w-full">
               <img
-                className="w-30 h-30 m-5"
+                className="w-full h-full m-5"
                 src={categoryBannerPreviewUrl || newCategory.bannerLink}
                 alt="placeholder image"
               />
