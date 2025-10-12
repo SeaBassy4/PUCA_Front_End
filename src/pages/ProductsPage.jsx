@@ -397,7 +397,7 @@ const ProductsPage = () => {
                 })
               }
             >
-              {categorias.map((categoria) => (
+              {categoriasFiltradas.map((categoria) => (
                 <option key={categoria._id} value={categoria._id}>
                   {categoria.nombre}
                 </option>
@@ -559,7 +559,7 @@ const ProductsPage = () => {
                 })
               }
             >
-              {categorias.map((categoria) => (
+              {categoriasFiltradas.map((categoria) => (
                 <option key={categoria._id} value={categoria._id}>
                   {categoria.nombre}
                 </option>
