@@ -86,6 +86,11 @@ const ProductsPage = () => {
     bannerLink: "",
   });
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [categoryFile, setCategoryFile] = useState(null);
+  const [categoryPreviewUrl, setCategoryPreviewUrl] = useState(null);
+  const [categoryBannerFile, setCategoryBannerFile] = useState(null);
+  const [categoryBannerPreviewUrl, setCategoryBannerPreviewUrl] =
+    useState(null);
 
   //size states
   const [newSize, setNewSize] = useState({
@@ -104,6 +109,10 @@ const ProductsPage = () => {
   const [selectedFilter, setSelectedFilter] = useState(null);
 
   //use effects
+
+  useEffect(() => {
+    console.log("categoria a agregar", newCategory);
+  }, [newCategory]);
 
   //filtrar por categorías activas
   useEffect(() => {
@@ -605,21 +614,29 @@ const ProductsPage = () => {
           }}
           onConfirm={async () => {
             try {
-              if (
-                !newCategory.nombre ||
-                !newCategory.imagenLink ||
-                !newCategory.bannerLink
-              ) {
+              if (!newCategory.nombre || !categoryFile || !categoryBannerFile) {
                 toast.warning(
                   "Por favor, complete todos los campos y seleccione imágenes."
                 );
                 return;
               }
-              const response = await postCategoria({
-                nombre: newCategory.nombre,
-                imagenLink: newCategory.imagenLink,
-                bannerLink: newCategory.bannerLink,
-              });
+              const cardIconUrl = await uploadImage(categoryFile);
+              if (!cardIconUrl) {
+                toast.error("Error al subir la imagen");
+                return;
+              }
+              const bannerUrl = await uploadImage(categoryBannerFile);
+              if (!bannerUrl) {
+                toast.error("Error al subir la imagen del banner");
+                return;
+              }
+              const categoryWithImage = {
+                ...newCategory,
+                imagenLink: cardIconUrl,
+                bannerLink: bannerUrl,
+              };
+
+              const response = await postCategoria(categoryWithImage);
 
               if (response.ok) {
                 refetchCategorias();
@@ -631,6 +648,10 @@ const ProductsPage = () => {
                   showConfirmButton: false,
                 });
                 setNewCategory({ nombre: "", imagenLink: "", bannerLink: "" });
+                setCategoryFile(null);
+                setCategoryBannerFile(null);
+                setCategoryPreviewUrl(null);
+                setCategoryBannerPreviewUrl(null);
                 setShowModal({ ...showModal, ADD_CATEGORY: false });
               } else {
                 toast.error(response.message);
@@ -651,6 +672,66 @@ const ProductsPage = () => {
               value={newCategory.nombre}
               placeholder="Ingrese el nombre de la categoría..."
             />
+            <div className="flex flex-row w-full justify-between">
+              <span className="font-bold mb-2">Imagen de Presentación</span>
+              <button
+                onClick={() => document.getElementById("categoryFile").click()}
+                className="bg-[#19212D] font-bold text-white rounded-[5px] px-4"
+              >
+                Añadir
+              </button>
+              <input
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setCategoryFile(file);
+                    setCategoryPreviewUrl(URL.createObjectURL(file));
+                  }
+                }}
+                id="categoryFile"
+                type="file"
+                accept="image/*"
+                className="hidden"
+              />
+            </div>
+            <div className="flex justify-center items-center w-full">
+              <img
+                className="w-30 h-30 m-5"
+                src={categoryPreviewUrl}
+                alt="placeholder image"
+              />
+            </div>
+            <div className="flex flex-row w-full justify-between">
+              <span className="font-bold mb-2">Banner de Categoría</span>
+              <button
+                onClick={() =>
+                  document.getElementById("categoryBannerFile").click()
+                }
+                className="bg-[#19212D] font-bold text-white rounded-[5px] px-4"
+              >
+                Añadir
+              </button>
+              <input
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setCategoryBannerFile(file);
+                    setCategoryBannerPreviewUrl(URL.createObjectURL(file));
+                  }
+                }}
+                id="categoryBannerFile"
+                type="file"
+                accept="image/*"
+                className="hidden"
+              />
+            </div>
+          </div>
+          <div className="flex justify-center items-center w-full">
+            <img
+              className="w-30 h-30 m-5"
+              src={categoryBannerPreviewUrl}
+              alt="placeholder image"
+            />
           </div>
         </Modal>
       )}
@@ -667,11 +748,37 @@ const ProductsPage = () => {
                 toast.warning("Por favor, complete el nombre de la categoría.");
                 return;
               }
-              const response = await putCategoria(selectedCategory._id, {
-                nombre: newCategory.nombre,
-                bannerLink: newCategory.bannerLink,
-                imagenLink: newCategory.imagenLink,
-              });
+
+              let categoryWithImage = { ...newCategory };
+
+              if (categoryFile) {
+                const cardIconUrl = await uploadImage(categoryFile);
+                if (!cardIconUrl) {
+                  toast.error("Error al subir la imagen");
+                  return;
+                }
+                categoryWithImage = {
+                  ...categoryWithImage,
+                  imagenLink: cardIconUrl,
+                };
+              }
+
+              if (categoryBannerFile) {
+                const bannerUrl = await uploadImage(categoryBannerFile);
+                if (!bannerUrl) {
+                  toast.error("Error al subir la imagen del banner");
+                  return;
+                }
+                categoryWithImage = {
+                  ...categoryWithImage,
+                  bannerLink: bannerUrl,
+                };
+              }
+
+              const response = await putCategoria(
+                selectedCategory._id,
+                categoryWithImage
+              );
 
               if (response.ok) {
                 refetchCategorias();
@@ -684,6 +791,10 @@ const ProductsPage = () => {
                 });
                 setNewCategory({ nombre: "", imagenLink: "", bannerLink: "" });
                 setShowModal({ ...showModal, EDIT_CATEGORY: false });
+                setCategoryFile(null);
+                setCategoryBannerFile(null);
+                setCategoryPreviewUrl(null);
+                setCategoryBannerPreviewUrl(null);
               } else {
                 toast.error(response.message);
               }
@@ -725,6 +836,66 @@ const ProductsPage = () => {
               value={newCategory.nombre}
               placeholder="Ingrese el nombre de la categoría..."
             />
+            <div className="flex flex-row w-full justify-between">
+              <span className="font-bold mb-2">Imagen de Presentación</span>
+              <button
+                onClick={() => document.getElementById("categoryFile").click()}
+                className="bg-[#19212D] font-bold text-white rounded-[5px] px-4"
+              >
+                Añadir
+              </button>
+              <input
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setCategoryFile(file);
+                    setCategoryPreviewUrl(URL.createObjectURL(file));
+                  }
+                }}
+                id="categoryFile"
+                type="file"
+                accept="image/*"
+                className="hidden"
+              />
+            </div>
+            <div className="flex justify-center items-center w-full">
+              <img
+                className="w-30 h-30 m-5"
+                src={categoryPreviewUrl || selectedCategory.imagenLink}
+                alt="placeholder image"
+              />
+            </div>
+            <div className="flex flex-row w-full justify-between">
+              <span className="font-bold mb-2">Banner de Categoría</span>
+              <button
+                onClick={() =>
+                  document.getElementById("categoryBannerFile").click()
+                }
+                className="bg-[#19212D] font-bold text-white rounded-[5px] px-4"
+              >
+                Añadir
+              </button>
+              <input
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setCategoryBannerFile(file);
+                    setCategoryBannerPreviewUrl(URL.createObjectURL(file));
+                  }
+                }}
+                id="categoryBannerFile"
+                type="file"
+                accept="image/*"
+                className="hidden"
+              />
+            </div>
+            <div className="flex justify-center items-center w-full">
+              <img
+                className="w-30 h-30 m-5"
+                src={categoryBannerPreviewUrl || newCategory.bannerLink}
+                alt="placeholder image"
+              />
+            </div>
           </div>
         </Modal>
       )}
