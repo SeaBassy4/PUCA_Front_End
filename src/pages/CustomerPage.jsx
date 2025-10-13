@@ -38,8 +38,10 @@ const CustomerPage = () => {
   const [categoriasFiltradas, setCategoriasFiltradas] = useState([]);
   const [productosFiltrados, setProductosFiltrados] = useState([]);
   const [tamañosFiltrados, setTamañosFiltrados] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [selectedSize, setSelectedSize] = useState(null);
   const [clientOrder, setClientOrder] = useState({
-    productos: [],
+    productos: [], //{cantidad, nombre, precio}
     total: 0,
   });
 
@@ -72,9 +74,51 @@ const CustomerPage = () => {
     }
   }, [selectedCategory, productos]);
 
+  useEffect(() => {
+    const totalPrice = selectedSize?.precioExtra + selectedProduct?.precioBase;
+    setTotal(totalPrice);
+  }, [selectedSize]);
+
   if (loadingProductos || loadingCategorias || loadingTamaños) {
     return <div>Cargando...</div>;
   }
+
+  const handleCloseModal = () => {
+    setSelectedProduct(null);
+    setSelectedSize(null);
+    setTotal(0);
+  };
+
+  const handleAddProduct = (selectedProduct, total) => {
+    setClientOrder((prev) => {
+      const foundIndex = prev.productos.findIndex(
+        (p) => p.nombre === selectedProduct.nombre
+      );
+
+      let updatedProductos;
+
+      if (foundIndex !== -1) {
+        updatedProductos = prev.productos.map((p, index) =>
+          index === foundIndex
+            ? {
+                ...p,
+                cantidad: p.cantidad + 1,
+                precio: p.precio + total,
+              }
+            : p
+        );
+      } else {
+        updatedProductos = [
+          ...prev.productos,
+          { ...selectedProduct, cantidad: 1, precio: total },
+        ];
+      }
+
+      const newTotal = updatedProductos.reduce((acc, p) => acc + p.precio, 0);
+
+      return { ...prev, productos: updatedProductos, total: newTotal };
+    });
+  };
 
   return (
     <div className="w-full flex-1 flex flex-row justify-center items-center">
@@ -120,44 +164,66 @@ const CustomerPage = () => {
               </p>
               <img src="coffee-cup-waiting.png" alt="coffee-cup" />
             </div>
-          ) : null}
+          ) : (
+            <div>
+              <h2 className="font-bold text-black text-xl mb-4">
+                Tu Orden Actual
+              </h2>
+              <ul>
+                {clientOrder.productos.map((producto) => (
+                  <li key={producto.nombre} className="mb-2">
+                    x{producto.cantidad} {producto.nombre} - ${producto.precio}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
       {/*Modal de Bebidas*/}
       {selectedProduct && selectedCategory.nombre === "Bebidas" ? (
         <ProductModal
-          onClose={() => setSelectedProduct(null)}
+          onClose={() => handleCloseModal()}
           title={selectedProduct.nombre}
           bannerLink={selectedCategory.bannerLink}
           onConfirm={() => {
-            console.log("Agregando Producto a la orden");
+            handleAddProduct(selectedProduct, total);
           }}
         >
-          <p>{selectedProduct.descripcion}</p>
-          <hr className="w-[80%]" />
-          <h2>Seleccionar Tamaño</h2>
+          <p className="mb-4">{selectedProduct.descripcion}</p>
+          <hr className="mb-4" />
+          <h2 className="mb-4">Seleccionar Tamaño</h2>
           <div className="flex flex-row w-full">
             {tamañosFiltrados.map((tamaño) => {
               return (
                 <div
-                  onClick={() => console.log("Agregando costo adicional")}
+                  onClick={() => setSelectedSize(tamaño)}
                   key={tamaño._id}
-                  className=" rounded-md p-2 m-2 cursor-pointer bg-yellow-300 text-black"
+                  className={`rounded-md p-2 m-2 cursor-pointer bg-yellow-300 text-black ${
+                    selectedSize?._id === tamaño._id ? "!bg-green-400" : ""
+                  }`}
                 >
                   <p className="font-bold">{tamaño.nombre}</p>
                 </div>
               );
             })}
           </div>
-          <hr />
-          <p>
+          <hr className="my-4" />
+          <p className="text-lg font-bold">
             Precio a pagar:{" "}
-            <span className="font-bold text-green-500">$500 (EJEMPLO)</span>
+            <span className="font-bold text-green-500">${total || 0}</span>
           </p>
         </ProductModal>
       ) : (
         selectedProduct && (
-          <ProductModal onClose={() => setSelectedProduct(null)}></ProductModal>
+          <ProductModal
+            onClose={() => {
+              handleCloseModal();
+            }}
+            onConfirm={() => {
+              handleAddProduct(selectedProduct, total);
+            }}
+          ></ProductModal>
         )
       )}
     </div>

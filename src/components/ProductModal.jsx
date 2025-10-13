@@ -17,7 +17,7 @@ const ProductModal = ({
       <div className="fixed inset-0 bg-black opacity-40 flex items-center justify-center z-40" />
       <div className="bg-white flex flex-col rounded-md z-50 w-[30%] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg">
         <img
-          className="w-full max-h-[150px] border border-black object-cover relative top-0 left-0 rounded-t-md"
+          className="w-full max-h-[150px] object-cover relative top-0 left-0 rounded-t-md"
           src={bannerLink}
           alt="food banner"
         />
