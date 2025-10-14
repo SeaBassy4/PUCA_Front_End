@@ -11,3 +11,13 @@ export const getDetalleOrdenes = async () => {
     throw error;
   }
 };
+
+export const postDetalleOrden = async (data) => {
+  try {
+    const response = await axios.post(`${API_URL}/detalle-ordenes`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al crear detalle de orden:", error);
+    throw error;
+  }
+};

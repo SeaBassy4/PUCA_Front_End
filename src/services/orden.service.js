@@ -12,6 +12,16 @@ export const getOrdenes = async () => {
   }
 };
 
+export const postOrden = async (data) => {
+  try {
+    const response = await axios.post(`${API_URL}/ordenes`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al crear orden:", error);
+    throw error;
+  }
+};
+
 export const putOrden = async (id, datos) => {
   try {
     const response = await axios.put(`${API_URL}/ordenes/${id}`, datos);

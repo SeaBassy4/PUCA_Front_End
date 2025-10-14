@@ -3,9 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { getCategorias } from "../services/categoria.service";
 import { getProductos } from "../services/producto.service";
 import { getTamaños } from "../services/tamaño.service";
+import { postOrden } from "../services/orden.service";
+import { postDetalleOrden } from "../services/detalle-orden.service";
 import { useEffect, useState } from "react";
 import ProductCard from "../components/products/ProductCard";
 import ProductModal from "../components/ProductModal";
+import { div } from "framer-motion/client";
 const CustomerPage = () => {
   //Data fetching
   const {
@@ -41,7 +44,7 @@ const CustomerPage = () => {
   const [total, setTotal] = useState(0);
   const [selectedSize, setSelectedSize] = useState(null);
   const [clientOrder, setClientOrder] = useState({
-    productos: [], //{cantidad, nombre, precio}
+    productos: [], //{cantidad, nombre, precio, tamaño}
     total: 0,
   });
 
@@ -79,6 +82,10 @@ const CustomerPage = () => {
     setTotal(totalPrice);
   }, [selectedSize]);
 
+  useEffect(() => {
+    setTotal(selectedProduct?.precioBase);
+  }, [selectedProduct]);
+
   if (loadingProductos || loadingCategorias || loadingTamaños) {
     return <div>Cargando...</div>;
   }
@@ -91,8 +98,11 @@ const CustomerPage = () => {
 
   const handleAddProduct = (selectedProduct, total) => {
     setClientOrder((prev) => {
-      const foundIndex = prev.productos.findIndex(
-        (p) => p.nombre === selectedProduct.nombre
+      const foundIndex = prev.productos.findIndex((p) =>
+        selectedSize
+          ? p.nombre === selectedProduct.nombre &&
+            p.tamaño === selectedSize.nombre
+          : p.nombre === selectedProduct.nombre
       );
 
       let updatedProductos;
@@ -110,7 +120,15 @@ const CustomerPage = () => {
       } else {
         updatedProductos = [
           ...prev.productos,
-          { ...selectedProduct, cantidad: 1, precio: total },
+          {
+            ...selectedProduct,
+            cantidad: 1,
+            precio: total,
+            tamaño: selectedSize?.nombre || "",
+            tamañoId: selectedSize._id,
+            productoId: selectedProduct._id,
+            precioUnitario: selectedProduct.precioBase,
+          },
         ];
       }
 
@@ -120,13 +138,75 @@ const CustomerPage = () => {
     });
   };
 
+  const handleCreateOrder = async () => {
+    try {
+      //tenemos que crear la orden para que  todos los detalle orden
+      //puedan apuntar a ella
+
+      /*const nuevaOrden = new Orden({
+      idUsuario,
+      nombreCliente,
+      fechaHora: new Date(),
+      estado,
+      total,
+    }); */
+
+      const nombreCliente = prompt(
+        "¿Cuál es su nombre? (Para recibir su orden)"
+      );
+
+      const newOrder = {
+        idUsuario: "Aqui va el id del usuario cuando tengamos login",
+        nombreCliente: nombreCliente,
+        fechaHora: new Date(),
+        total: clientOrder.total,
+      };
+
+      const response = await postOrden(newOrder);
+      const createdOrderId = response._id; //ahora con ese Id creamos detalles Ordenes
+
+      /*    
+      const nuevoDetalleOrden = new DetalleOrden({
+      idOrden,
+      idProducto,
+      idTamaño,
+      cantidad,
+      precioUnitario,
+    }); */
+
+      for (const producto of clientOrder.productos) {
+        const newDetalleOrden = {
+          idOrden: createdOrderId,
+          idProducto: producto.productoId,
+          idTamaño: producto.tamañoId,
+          cantidad: producto.cantidad,
+          precioUnitario: producto.precioUnitario,
+        };
+
+        await postDetalleOrden(newDetalleOrden);
+      }
+    } catch (error) {
+      console.error("Error al crear la orden:", error);
+    }
+  };
+
   return (
     <div className="w-full flex-1 flex flex-row justify-center items-center">
       <div className="flex flex-col w-[75%] p-10 h-full">
         {selectedCategory ? (
-          <h1 className="font-bold text-2xl">Selecciona tu Alimento 😎</h1>
+          <div className="flex flex-row gap-5">
+            <div
+              className="rounded-full p-2 cursor-pointer"
+              onClick={() => setSelectedCategory(null)}
+            >
+              <img width={20} src="svgs/return_black.png" alt="Regresar" />
+            </div>
+            <h2 className="font-bold text-2xl flex items-center">
+              Selecciona tu Alimento 😎
+            </h2>
+          </div>
         ) : (
-          <h1 className="font-bold text-2xl">Selecciona Una Categoría 😎</h1>
+          <h2 className="font-bold text-2xl">Selecciona Una Categoría 😎</h2>
         )}
         <div className="flex flex-row flex-wrap items-center justify-evenly gap-5 h-full">
           {!selectedCategory &&
@@ -151,10 +231,10 @@ const CustomerPage = () => {
             ))}
         </div>
       </div>
-      <div className="h-full w-[25%]  p-10">
-        <div className="rounded-md bg-white border-gray-300 border-2 flex h-full">
+      <div className="h-full w-[30%] p-10">
+        <div className="rounded-md bg-white border-gray-300 border-2 flex h-full p-4">
           {clientOrder.productos.length === 0 ? (
-            <div className="flex flex-col justify-center items-center text-center p-4">
+            <div className="flex flex-col justify-center items-center text-center">
               <h2 className="font-bold text-black text-xl mb-4">
                 Tu Orden se Creará Aquí
               </h2>
@@ -165,17 +245,31 @@ const CustomerPage = () => {
               <img src="coffee-cup-waiting.png" alt="coffee-cup" />
             </div>
           ) : (
-            <div>
+            <div className="flex flex-col w-full">
               <h2 className="font-bold text-black text-xl mb-4">
                 Tu Orden Actual
               </h2>
               <ul>
-                {clientOrder.productos.map((producto) => (
-                  <li key={producto.nombre} className="mb-2">
-                    x{producto.cantidad} {producto.nombre} - ${producto.precio}
+                {clientOrder.productos.map((producto, index) => (
+                  <li key={index} className="mb-2">
+                    x{producto.cantidad} {producto.nombre}{" "}
+                    {producto.tamaño || ""}{" "}
+                    <span className="font-bold text-green-600">
+                      ${producto.precio}
+                    </span>
                   </li>
                 ))}
               </ul>
+              <p className="font-bold text-lg mt-4">
+                Total a Pagar:{" "}
+                <span className="text-green-600">${clientOrder.total}</span>
+              </p>
+              <button
+                onClick={async () => await handleCreateOrder()}
+                className="text-white bg-green-600 font-semibold py-2 px-4 my-4 rounded-md w-full"
+              >
+                Confirm
+              </button>
             </div>
           )}
         </div>
@@ -187,6 +281,10 @@ const CustomerPage = () => {
           title={selectedProduct.nombre}
           bannerLink={selectedCategory.bannerLink}
           onConfirm={() => {
+            if (!selectedSize) {
+              alert("Por favor selecciona un tamaño antes");
+              return;
+            }
             handleAddProduct(selectedProduct, total);
           }}
         >
@@ -220,10 +318,19 @@ const CustomerPage = () => {
             onClose={() => {
               handleCloseModal();
             }}
+            title={selectedProduct.nombre}
+            bannerLink={selectedCategory.bannerLink}
             onConfirm={() => {
               handleAddProduct(selectedProduct, total);
             }}
-          ></ProductModal>
+          >
+            <p className="mb-4">{selectedProduct.descripcion}</p>
+            <hr className="mb-4" />
+            <p className="text-lg font-bold">
+              Precio a pagar:{" "}
+              <span className="font-bold text-green-500">${total || 0}</span>
+            </p>
+          </ProductModal>
         )
       )}
     </div>
