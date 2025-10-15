@@ -125,7 +125,7 @@ const CustomerPage = () => {
             cantidad: 1,
             precio: total,
             tamaño: selectedSize?.nombre || "",
-            tamañoId: selectedSize._id,
+            tamañoId: selectedSize?._id || "",
             productoId: selectedProduct._id,
             precioUnitario: selectedProduct.precioBase,
           },
@@ -156,9 +156,8 @@ const CustomerPage = () => {
       );
 
       const newOrder = {
-        idUsuario: "Aqui va el id del usuario cuando tengamos login",
+        idUsuario: "68e3289ed580f299becb56c1", //por ahora lo hardcodeamos
         nombreCliente: nombreCliente,
-        fechaHora: new Date(),
         total: clientOrder.total,
       };
 
@@ -174,19 +173,29 @@ const CustomerPage = () => {
       precioUnitario,
     }); */
 
+      let flag = false;
       for (const producto of clientOrder.productos) {
         const newDetalleOrden = {
           idOrden: createdOrderId,
           idProducto: producto.productoId,
-          idTamaño: producto.tamañoId,
+          idTamaño: producto.tamañoId || null,
           cantidad: producto.cantidad,
           precioUnitario: producto.precioUnitario,
         };
 
         await postDetalleOrden(newDetalleOrden);
+        flag = true;
+      }
+      if (flag) {
+        setClientOrder({ productos: [], total: 0 });
+        setSelectedCategory(null);
+        setSelectedProduct(null);
+        setSelectedSize(null);
+        setTotal(0);
+        alert("Orden creada con éxito, por favor espere su pedido");
       }
     } catch (error) {
-      console.error("Error al crear la orden:", error);
+      console.error("Error al crear la orden (desde el frontend):", error);
     }
   };
 

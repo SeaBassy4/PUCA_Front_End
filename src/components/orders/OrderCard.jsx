@@ -9,21 +9,15 @@ const OrderCard = ({ order, onComplete, onDelete, detalleOrdenes }) => {
     <div className="flex flex-col border relative bg-white border-gray-300 p-6 rounded-md w-full h-[250px]">
       <h1 className="font-bold text-2xl mb-3">{order.nombreCliente}</h1>
       <ul className="decoration-none">
-
-
-
         {productos?.map((producto) => (
           <li className="text-xl">
             x{producto.cantidad} {producto.idProducto.nombre} -{" "}
-            <span className="font-bold">{producto.idTamaño.nombre}</span> -{" "}
+            <span className="font-bold">{producto?.idTamaño?.nombre}</span> -{" "}
             <span className="text-green-600 font-bold">
               ${(producto.precioUnitario * producto.cantidad).toFixed(2)}
             </span>
           </li>
         ))}
-
-
-        
       </ul>
       <button
         onClick={onComplete}
