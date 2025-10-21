@@ -6,6 +6,7 @@ import { getOrdenes } from "../services/orden.service";
 import { getDetalleOrdenes } from "../services/detalle-orden.service";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import CalendarComponent from "../components/CalendarComponent";
 
 const ReportsPage = () => {
   //data fetching
@@ -146,39 +147,42 @@ const ReportsPage = () => {
 
   return (
     <PageWrapper>
-      <div className="p-4">
+      <div className="p-4 w-full h-full">
         {/*Contenedor*/}
-        <div className="border border-gray-200 rounded-b-lg p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="border flex-1 border-gray-200 rounded-b-lg p-4 flex flex-row">
           {/* Historial izquierda*/}
-          <section className="border rounded-lg p-4">
-            <h2 className="text-xl font-semibold mb-4">
-              Historial de Reportes de Ventas
-            </h2>
-            <div className="overflow-y-auto max-h-[420px]">
-              <table className="w-full text-sm border-collapse">
-                <thead>
-                  <tr className="bg-gray-200 text-left">
-                    <th className="p-2 font-medium">Fecha Creación</th>
-                    <th className="p-2 font-medium">Archivos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {fechas.map((fecha, index) => (
-                    <tr key={index} className="border-t">
-                      <td className="p-2">{fecha}</td>
-                      <td className="p-2">
-                        <button
-                          onClick={() => setSelectedDate(fecha)}
-                          className="px-4 py-1 rounded bg-gray-800 text-white"
-                        >
-                          Elegir
-                        </button>
-                      </td>
+          <section className=" rounded-lg p-4 w-full flex-1">
+            <div className="h-[50%]">
+              <h2 className="text-xl font-semibold mb-4">
+                Historial de Reportes de Ventas
+              </h2>
+              <div className="overflow-y-auto max-h-[420px]">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-gray-200 text-left">
+                      <th className="p-2 font-medium">Fecha Creación</th>
+                      <th className="p-2 font-medium">Archivos</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {fechas.map((fecha, index) => (
+                      <tr key={index} className="border-t">
+                        <td className="p-2">{fecha}</td>
+                        <td className="p-2">
+                          <button
+                            onClick={() => setSelectedDate(fecha)}
+                            className="px-4 py-1 rounded bg-gray-800 text-white"
+                          >
+                            Elegir
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
+            <div className=""></div>
           </section>
 
           {/* Selección derecha */}

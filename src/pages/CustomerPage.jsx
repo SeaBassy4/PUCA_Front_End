@@ -49,6 +49,10 @@ const CustomerPage = () => {
   });
 
   useEffect(() => {
+    console.log("Orden del cliente actualizada: ", clientOrder);
+  }, [clientOrder]);
+
+  useEffect(() => {
     if (categorias) {
       const filteredCategories = categorias.filter(
         (categoria) => categoria.activo
@@ -89,6 +93,15 @@ const CustomerPage = () => {
   if (loadingProductos || loadingCategorias || loadingTamaños) {
     return <div>Cargando...</div>;
   }
+
+  const deleteProductFromOrder = (index) => {
+    const filteredArray = clientOrder.productos.filter((_, i) => i !== index);
+    setClientOrder((prev) => ({
+      ...prev,
+      productos: filteredArray,
+      total: filteredArray.reduce((acc, p) => p.precio + acc, 0),
+    }));
+  };
 
   const handleCloseModal = () => {
     setSelectedProduct(null);
@@ -260,12 +273,24 @@ const CustomerPage = () => {
               </h2>
               <ul>
                 {clientOrder.productos.map((producto, index) => (
-                  <li key={index} className="mb-2">
-                    x{producto.cantidad} {producto.nombre}{" "}
-                    {producto.tamaño || ""}{" "}
-                    <span className="font-bold text-green-600">
-                      ${producto.precio}
-                    </span>
+                  <li
+                    key={index}
+                    className="mb-2 flex flex-row justify-between"
+                  >
+                    <p>
+                      x{producto.cantidad} {producto.nombre}{" "}
+                      {producto.tamaño || ""}{" "}
+                      <span className="font-bold text-green-600">
+                        ${producto.precio}
+                      </span>
+                    </p>
+                    <img
+                      onClick={() => deleteProductFromOrder(index)}
+                      className="cursor-pointer"
+                      src="/svgs/delete.png"
+                      alt="delete"
+                      width={20}
+                    />
                   </li>
                 ))}
               </ul>
