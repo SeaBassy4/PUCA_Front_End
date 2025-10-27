@@ -6,16 +6,18 @@ import { getOrdenes } from "../services/orden.service";
 import { getDetalleOrdenes } from "../services/detalle-orden.service";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import CalendarComponent from "../components/CalendarComponent";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import Swal from "sweetalert2";
 
 const ReportsPage = () => {
   //data fetching
-  const { data: ordenes } = useQuery({
+  const { data: ordenes, isLoading: loadingOrdenes } = useQuery({
     queryKey: ["ordenes"],
     queryFn: getOrdenes,
   });
 
-  const { data: detalleOrdenes } = useQuery({
+  const { data: detalleOrdenes, isLoading: loadingDetalles } = useQuery({
     queryKey: ["detalleOrdenes"],
     queryFn: getDetalleOrdenes,
   });
@@ -50,9 +52,11 @@ const ReportsPage = () => {
   useEffect(() => {
     if (!selectedDate || !ordenes || !detalleOrdenes) return;
 
+     const fechaSeleccionada = selectedDate.toLocaleDateString("es-ES");
+
     const ordenesFechaSeleccionada = ordenes.filter((orden) => {
       const fechaOrden = new Date(orden.fechaHora).toLocaleDateString("es-ES");
-      return fechaOrden === selectedDate;
+      return fechaOrden === fechaSeleccionada;
     });
     setOrdenesFiltradas(ordenesFechaSeleccionada);
     console.log("ordenes de fecha seleccionada ", ordenesFechaSeleccionada);
@@ -66,11 +70,14 @@ const ReportsPage = () => {
     });
     console.log("detalles filtrados de fecha seleccionada", detallesFiltrados);
     setDetallesOrdenesFiltradas(detallesFiltrados);
-  }, [selectedDate]);
+  }, [selectedDate, ordenes, detalleOrdenes]);
 
+  
+  /*
   useEffect(() => {
     console.log("opciones seleccionadas", opcionesSeleccionadas);
   }, [opcionesSeleccionadas]);
+ 
 
   //fechas ultimos 30 dias
   const generarFechasUltimos30Dias = () => {
@@ -87,12 +94,31 @@ const ReportsPage = () => {
 
   /* */
   const generarPDF = (opciones) => {
-    if (!selectedDate) return;
+    if (!selectedDate) {
+
+    alert ("Selecicone una fecha antes de exportat el pdf")
+      return;
+
+      }
+
+    const fechaTexto = selectedDate.toLocaleDateString("es-ES");
+
+  if (ordenesFiltradas.length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Sin registros",
+        text: "No hay ventas registradas para la fecha seleccionada.",
+        confirmButtonColor: "rgba(85, 146, 77, 1)",
+        confirmButtonText: "Entendido",
+      });
+      return;
+    }
+
 
     const doc = new jsPDF();
 
     doc.setFontSize(16);
-    doc.text(`Reporte Completo - ${selectedDate}`, 14, 15);
+    doc.text(`Reporte Completo - ${fechaTexto}`, 14, 15);
 
     // Usar TODAS las columnas disponibles
     const headers = Object.keys(opciones)
@@ -101,39 +127,36 @@ const ReportsPage = () => {
 
     const datos = [];
 
-    detallesOrdenesFiltradas.map((detalleOrden) => {
-      const row = [];
+    detallesOrdenesFiltradas.forEach((detalleOrden) => {
+  const ordenAsociada = ordenesFiltradas.find(
+    (orden) => orden._id === detalleOrden.idOrden
+  );
 
-      const ordenAsociada = ordenesFiltradas.find(
-        (orden) => orden._id === detalleOrden.idOrden
-      );
+  const row = [];
 
-      if (opciones.numeroOrden.value) {
-        row.push(detalleOrden.idOrden.substring(0, 5));
-      }
-      if (opciones.nombreCliente.value) {
-        row.push(
-          ordenAsociada.nombreCliente ? ordenAsociada.nombreCliente : "N/A"
-        );
-      }
-      if (opciones.cajeroEnTurno.value) {
-        row.push(
-          ordenAsociada.idUsuario ? ordenAsociada.idUsuario?.nombre : "N/A"
-        );
-      }
-      if (opciones.horaTransaccion.value) {
-        row.push(
-          ordenAsociada.fechaHora
-            ? new Date(ordenAsociada.fechaHora).toLocaleTimeString("es-ES")
-            : "N/A"
-        );
-      }
-      if (opciones.estadoOrden.value) {
-        row.push(ordenAsociada.estado);
-      }
+  if (opciones.numeroOrden.value) {
+    row.push(detalleOrden.idOrden.substring(0, 5));
+  }
+  if (opciones.nombreCliente.value) {
+    row.push(ordenAsociada?.nombreCliente || "N/A");
+  }
+  if (opciones.cajeroEnTurno.value) {
+    row.push(ordenAsociada?.idUsuario?.nombre || "N/A");
+  }
+  if (opciones.horaTransaccion.value) {
+    row.push(
+      ordenAsociada?.fechaHora
+        ? new Date(ordenAsociada.fechaHora).toLocaleTimeString("es-ES")
+        : "N/A"
+    );
+  }
+  if (opciones.estadoOrden.value) {
+    row.push(ordenAsociada?.estado || "N/A");
+  }
 
-      datos.push(row);
-    });
+  datos.push(row);
+});
+
 
     autoTable(doc, {
       head: [headers],
@@ -142,7 +165,7 @@ const ReportsPage = () => {
       styles: { fontSize: 8 },
     });
 
-    doc.save(`reporte-completo-${selectedDate.replace(/\//g, "-")}.pdf`);
+    doc.save(`reporte-completo-${fechaTexto.replace(/\//g, "-")}.pdf`);
   }; /* */
 
   return (
@@ -154,49 +177,42 @@ const ReportsPage = () => {
           <section className=" rounded-lg p-4 w-full flex-1">
             <div className="h-[50%]">
               <h2 className="text-xl font-semibold mb-4">
-                Historial de Reportes de Ventas
-              </h2>
+              Seleccione una Fecha
+            </h2>
               <div className="overflow-y-auto max-h-[420px]">
-                <table className="w-full text-sm border-collapse">
-                  <thead>
-                    <tr className="bg-gray-200 text-left">
-                      <th className="p-2 font-medium">Fecha Creación</th>
-                      <th className="p-2 font-medium">Archivos</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {fechas.map((fecha, index) => (
-                      <tr key={index} className="border-t">
-                        <td className="p-2">{fecha}</td>
-                        <td className="p-2">
-                          <button
-                            onClick={() => setSelectedDate(fecha)}
-                            className="px-4 py-1 rounded bg-gray-800 text-white"
-                          >
-                            Elegir
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div className="bg-white shadow-md rounded-lg p-4">
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date) => setSelectedDate(date)}
+                dateFormat="dd/MM/yyyy"
+                inline
+                maxDate={new Date()}
+                
+              />
+                </div>
               </div>
             </div>
             <div className=""></div>
           </section>
 
           {/* Selección derecha */}
-          {selectedDate && (
-            <section className="border rounded-lg p-4">
-              <h2 className="text-xl font-semibold mb-4">
-                Seleccionar Información a Exportar
-              </h2>
+            <section className="bg-white shadow-lg border border-gray-200 rounded-2xl p-6 w-full flex-[2] transition-all duration-300 hover:shadow-xl">
+                <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+               📝 <span>Exportar Reporte de Ventas</span>
+                </h2>
+
+                <p className="text-gray-600 text-sm mb-4">
+                Selecciona una fecha y elige qué información deseas incluir en el archivo PDF.
+              </p>
 
               <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-                <h3 className="text-lg font-semibold">
-                  Informe de Ventas Día: {selectedDate}
-                </h3>
-                <button className="text-sm underline text-blue-600"></button>
+                
+              <h3 className="text-lg font-semibold">
+                {selectedDate
+                  ? `Informe de Ventas Día: ${selectedDate.toLocaleDateString("es-ES")}`
+                  : "Seleccione una fecha para visualizar el informe"}
+              </h3>
+
               </div>
               <p className="text-sm text-gray-600 mb-4">
                 En este apartado usted podrá seleccionar qué columnas son
@@ -205,142 +221,70 @@ const ReportsPage = () => {
               </p>
 
               <div className="space-y-2">
-                <label className="flex items-center gap-2">
+              {Object.keys(opcionesSeleccionadas).map((key) => (
+
+                
+                <label key= {key} className="flex items-center gap-2">
                   <input
-                    onChange={(e) =>
-                      setOpcionesSeleccionadas({
-                        ...opcionesSeleccionadas,
-                        numeroOrden: {
-                          ...opcionesSeleccionadas.numeroOrden,
-                          value: e.target.checked,
-                        },
-                      })
-                    }
-                    type="checkbox"
-                    className="w-4 h-4"
+                   type="checkbox"
+                   disabled = {!selectedDate}
+                      checked={opcionesSeleccionadas[key].value}
+                      onChange={(e) =>
+                        setOpcionesSeleccionadas({
+                          ...opcionesSeleccionadas,
+                          [key]: {
+                            ...opcionesSeleccionadas[key],
+                            value: e.target.checked,
+                          },
+                        })
+                      }
+                      className="w-4 h-4 accent-green-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   />
-                  <span>Número de Orden</span>
+                <span>{opcionesSeleccionadas[key].title}</span>
                 </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    onChange={(e) =>
-                      setOpcionesSeleccionadas({
-                        ...opcionesSeleccionadas,
-                        nombreCliente: {
-                          ...opcionesSeleccionadas.nombreCliente,
-                          value: e.target.checked,
-                        },
-                      })
-                    }
-                    type="checkbox"
-                    className="w-4 h-4"
-                  />
-                  <span>Nombre del Cliente</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    onChange={(e) =>
-                      setOpcionesSeleccionadas({
-                        ...opcionesSeleccionadas,
-                        cajeroEnTurno: {
-                          ...opcionesSeleccionadas.cajeroEnTurno,
-                          value: e.target.checked,
-                        },
-                      })
-                    }
-                    type="checkbox"
-                    className="w-4 h-4"
-                  />
-                  <span>Cajero en Turno</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    onChange={(e) =>
-                      setOpcionesSeleccionadas({
-                        ...opcionesSeleccionadas,
-                        horaTransaccion: {
-                          ...opcionesSeleccionadas.horaTransaccion,
-                          value: e.target.checked,
-                        },
-                      })
-                    }
-                    type="checkbox"
-                    className="w-4 h-4"
-                  />
-                  <span>Hora de la transacción</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    onChange={(e) =>
-                      setOpcionesSeleccionadas({
-                        ...opcionesSeleccionadas,
-                        estadoOrden: {
-                          ...opcionesSeleccionadas.estadoOrden,
-                          value: e.target.checked,
-                        },
-                      })
-                    }
-                    type="checkbox"
-                    className="w-4 h-4"
-                  />
-                  <span>Estado Final de la Orden</span>
-                </label>
+                ))}
+                
               </div>
 
               <div className="flex gap-4 mt-6">
                 <button
-                  onClick={() => {
-                    const opcionesPersonalizadas = {
-                      numeroOrden: { ...opcionesSeleccionadas.numeroOrden },
-                      nombreCliente: { ...opcionesSeleccionadas.nombreCliente },
-                      cajeroEnTurno: { ...opcionesSeleccionadas.cajeroEnTurno },
-                      horaTransaccion: {
-                        ...opcionesSeleccionadas.horaTransaccion,
-                      },
-                      estadoOrden: { ...opcionesSeleccionadas.estadoOrden },
-                    };
+                onClick={() => generarPDF(opcionesSeleccionadas)}
+                disabled={!selectedDate} 
+                  className={`px-5 py-2 rounded text-white ${
+              selectedDate
+                ? "bg-gray-800 hover:bg-green-700 transition-colors duration-200"
+                : "bg-gray-400 cursor-not-allowed"
+            }`}
 
-                    generarPDF(opcionesPersonalizadas);
-                  }}
-                  className="px-5 py-2 rounded bg-gray-800 text-white"
                 >
                   Exportar Selección
+                  
                 </button>
+
                 <button
                   onClick={() => {
-                    const opcionesTodasTrue = {
-                      numeroOrden: {
-                        ...opcionesSeleccionadas.numeroOrden,
-                        value: true,
-                      },
-                      nombreCliente: {
-                        ...opcionesSeleccionadas.nombreCliente,
-                        value: true,
-                      },
-                      cajeroEnTurno: {
-                        ...opcionesSeleccionadas.cajeroEnTurno,
-                        value: true,
-                      },
-                      horaTransaccion: {
-                        ...opcionesSeleccionadas.horaTransaccion,
-                        value: true,
-                      },
-                      estadoOrden: {
-                        ...opcionesSeleccionadas.estadoOrden,
-                        value: true,
-                      },
-                    };
-
-                    // Pasar directamente el objeto temporal a generarPDF
-                    generarPDF(opcionesTodasTrue);
+                    
+                    const todasTrue = Object.fromEntries(
+                      Object.entries(opcionesSeleccionadas).map(([k, v]) => [
+                        k,
+                        { ...v, value: true },
+                      ])
+                    );
+                    generarPDF(todasTrue);
                   }}
-                  className="px-5 py-2 rounded bg-gray-800 text-white"
+                  disabled={!selectedDate}
+                    className={`px-5 py-2 rounded text-white ${
+                    selectedDate
+                      ? "bg-gray-800 hover:bg-green-700 transition-colors duration-200"
+                      : "bg-gray-400 cursor-not-allowed"
+                  }`}
+
                 >
                   Exportar Todo
                 </button>
               </div>
             </section>
-          )}
+          
         </div>
       </div>
     </PageWrapper>
