@@ -1,12 +1,13 @@
-import SideBarButton from "./SideBarButton";
-import { section1, section2 } from "../../sidebarbutton";
 import { useRef, useEffect } from "react";
 import { Home, Package, Clock, Users, FileText, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext"; // Ajusta la ruta según tu estructura
 
 const SideBar = ({ isOpen, setIsOpen }) => {
   const sidebarRef = useRef();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
   // Detectar clics fuera del sidebar
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -25,6 +26,19 @@ const SideBar = ({ isOpen, setIsOpen }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, setIsOpen]);
+
+  // Función para manejar navegación
+  const handleNavigation = (path) => {
+    navigate(path);
+    setIsOpen(false);
+  };
+
+  // Función para manejar logout
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+    setIsOpen(false);
+  };
 
   return (
     <div
@@ -49,25 +63,25 @@ const SideBar = ({ isOpen, setIsOpen }) => {
         </h2>
         <ul className="flex flex-col gap-4">
           <li
-            onClick={() => navigate("/ordenes")}
+            onClick={() => handleNavigation("/ordenes")}
             className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
           >
             <Home size={18} /> <span className="text-sm">Órdenes</span>
           </li>
           <li
-            onClick={() => navigate("/productos")}
+            onClick={() => handleNavigation("/productos")}
             className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
           >
             <Package size={18} /> <span className="text-sm">Productos</span>
           </li>
           <li
-            onClick={() => navigate("/historial")}
+            onClick={() => handleNavigation("/historial")}
             className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
           >
             <Clock size={18} /> <span className="text-sm">Historial</span>
           </li>
           <li
-            onClick={() => navigate("/usuarios")}
+            onClick={() => handleNavigation("/usuarios")}
             className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
           >
             <Users size={18} /> <span className="text-sm">Usuarios</span>
@@ -85,12 +99,15 @@ const SideBar = ({ isOpen, setIsOpen }) => {
         </h2>
         <ul className="flex flex-col gap-4">
           <li
-            onClick={() => navigate("/reportes")}
+            onClick={() => handleNavigation("/reportes")}
             className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
           >
             <FileText size={18} /> <span className="text-sm">Reportes</span>
           </li>
-          <li className="flex items-center gap-3 cursor-pointer hover:text-blue-600">
+          <li 
+            onClick={handleLogout}
+            className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+          >
             <LogOut size={18} /> <span className="text-sm">Cerrar Sesión</span>
           </li>
         </ul>
@@ -98,7 +115,16 @@ const SideBar = ({ isOpen, setIsOpen }) => {
 
       {/* Usuario abajo */}
       <div className="mt-auto px-6 pb-6">
-        <div className="bg-gray-100 border rounded-md p-3 text-center shadow-sm"></div>
+        <div className="bg-gray-100 border rounded-md p-3 text-center shadow-sm">
+          {user ? (
+            <div>
+              <p className="text-sm font-medium">{user.nombre}</p>
+              <p className="text-xs text-gray-500 capitalize">{user.rol}</p>
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500">No hay sesión activa</p>
+          )}
+        </div>
       </div>
     </div>
   );
