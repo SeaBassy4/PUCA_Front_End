@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import SearchBox from "../components/SearchBox";
 import Modal from "../components/Modal";
 import Swal from "sweetalert2";
-
-import {
+import { FaEye, FaEyeSlash } from "react-icons/fa"
+import {  
   getUsuarios as obtenerUsuarios,
   postUsuario as crearUsuario,
   putUsuario as actualizarUsuario,
@@ -12,7 +12,7 @@ import {
 
 const UsersTable = () => {
   const [usuarios, setUsuarios] = useState([]); //array dinamico, almacena la lista del backend
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(""); //busquedad 
 
   //modal state
   const [showModal, setShowModal] = useState(false);
@@ -29,6 +29,7 @@ const UsersTable = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);  
 
   useEffect(() => {
     const fetchUsuarios = async () => {
@@ -112,6 +113,10 @@ const UsersTable = () => {
     setAction("edit");
     setSelectedUser(user);
     setShowModal(true);
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prevState) => !prevState); // Alterna la visibilidad de la contraseña
   };
 
   const handleConfirm = async () => {
@@ -243,14 +248,14 @@ const UsersTable = () => {
                   <td className="p-3">{u.nombre}</td>
                   <td className="p-3">{u.celular}</td>
                   <td className="p-3">{u.correo}</td>
-                  <td className="p-3">{u.contraseña}</td>
+                  <td className="p-3">{u.contraseña ? "********" : "No definida"}</td>
                   <td className="p-3">{u.rol}</td>
                   <td className="p-3">
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEdit(u)}
                         className="px-4 py-2 rounded-md bg-neutral-900 text-white font-semibold hover:opacity-90"
-                      >
+                      > 
                         Editar
                       </button>
                       <button
@@ -345,35 +350,43 @@ const UsersTable = () => {
             )}
           </div>
 
-          {/* Contraseña */}
-          {action === "add" && (
-            <div className="mt-4">
-              <label className="block font-semibold mb-1">
-                Contraseña Inicial
-              </label>
+                  {/* Contraseña */}
+        {(action === "add" || action === "edit") && (
+          <div className="mt-4">
+            <label className="block font-semibold mb-1">Contraseña Inicial</label>
+            {action === "add" ? (
               <p className="text-sm text-gray-600 mb-2">
-                Esta contraseña servirá para iniciar sesión la primera vez, el
-                usuario deberá cambiarla al entrar
+                Esta contraseña servirá para iniciar sesión la primera vez, el usuario deberá cambiarla al entrar.
               </p>
+            ) : (
+              <p className="text-sm text-gray-600 mb-2">
+                Si deseas cambiar la contraseña de este usuario, ingrésala aquí. Si no se requiere cambiarla, deja el campo vacío.
+              </p>
+            )}
+            <div className="relative">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"} // Alterna entre "text para mostrar" y "password para ocultar"
                 name="contraseña"
                 value={form.contraseña}
                 onChange={onChange}
                 className={`w-full border rounded-md p-2 outline-none focus:ring-2 ${
-                  errors.contraseña
-                    ? "border-red-500"
-                    : "border-gray-300 focus:ring-[#59B03C]"
+                  errors.contraseña ? "border-red-500" : "border-gray-300 focus:ring-[#59B03C]"
                 }`}
               />
-              {errors.contraseña && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.contraseña}{" "}
-                </p>
-              )}
+              <button
+                type="button"
+                onClick={togglePasswordVisibility} // Alternar 
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />} {/* Icono del ojito */}
+              </button>
             </div>
-          )}
+            {errors.contraseña && <p className="text-red-500 text-sm mt-1">{errors.contraseña}</p>}
+          </div>
+        )}
 
+
+          
           {/*Rol*/}
           <div className="mt-4">
             <label className="block font-semibold mb-1">Rol</label>
