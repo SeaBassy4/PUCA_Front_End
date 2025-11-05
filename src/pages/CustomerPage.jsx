@@ -168,6 +168,11 @@ const CustomerPage = () => {
         "¿Cuál es su nombre? (Para recibir su orden)"
       );
 
+      if (!nombreCliente || nombreCliente.trim() === "") {
+        alert("Por favor ingresa un nombre válido para tu orden.");
+        return;
+      }
+
       const newOrder = {
         idUsuario: "68e3289ed580f299becb56c1", //por ahora lo hardcodeamos
         nombreCliente: nombreCliente,
