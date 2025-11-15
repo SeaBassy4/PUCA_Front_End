@@ -214,7 +214,7 @@ const OrdersPage = () => {
                 {productos?.map((prod) => (
                   <li key={prod._id}>
                     x{prod.cantidad} {prod.idProducto.nombre} -{" "}
-                    <span className="font-bold">{prod.idTamaño.nombre}</span>{" "}
+                    <span className="font-bold">{prod.idTamaño?.nombre}</span>{" "}
                   </li>
                 ))}
               </ul>

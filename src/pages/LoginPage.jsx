@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { getUsuarios } from '../services/usuario.service'
 import { useAuth } from '../context/AuthContext.jsx'
+import {toast} from 'react-toastify'
 
 const LoginPage = () => {
   const [correo, setCorreo] = useState("");
@@ -24,6 +25,8 @@ const LoginPage = () => {
 
   const iniciarSesion = async (e) => {
 
+    
+
     e.preventDefault();
     try {
       console.log("Intentando iniciar sesión con:", { correo }); // DEBUG
@@ -36,11 +39,11 @@ const LoginPage = () => {
       console.log("Usuario encontrado:", usuarioEncontrado); // DEBUG
 
       if (!usuarioEncontrado) {
-        alert("Credenciales incorrectas");
+        toast.error("Por favor, completa todos los campos");
         return;
       }
       if (!usuarioEncontrado.activo) {
-        alert("Usuario inactivo");
+        toast.error("Usuario inactivo. Contacta al administrador.");
         return;
       }
 
@@ -91,6 +94,7 @@ const LoginPage = () => {
               <div className='w-[80%]'>
                 <button type='submit' className='bg-[#59B03C] text-white font-semibold w-full rounded-[10px] p-2'>Iniciar Sesión</button>
               </div>
+              
             </div>
 
           </form>

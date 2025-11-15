@@ -8,6 +8,9 @@ const SideBar = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
+  const isEmpleado = user?.rol === "Empleado";
+  const isAdministrador = user?.rol === "Administrador";
+
   // Detectar clics fuera del sidebar
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -68,43 +71,48 @@ const SideBar = ({ isOpen, setIsOpen }) => {
           >
             <Home size={18} /> <span className="text-sm">Órdenes</span>
           </li>
-          <li
-            onClick={() => handleNavigation("/productos")}
-            className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
-          >
-            <Package size={18} /> <span className="text-sm">Productos</span>
-          </li>
-          <li
-            onClick={() => handleNavigation("/historial")}
-            className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
-          >
-            <Clock size={18} /> <span className="text-sm">Historial</span>
-          </li>
-          <li
-            onClick={() => handleNavigation("/usuarios")}
-            className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
-          >
-            <Users size={18} /> <span className="text-sm">Usuarios</span>
-          </li>
+          {isAdministrador && (
+            <>
+              <li
+                onClick={() => handleNavigation("/productos")}
+                className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+              >
+                <Package size={18} /> <span className="text-sm">Productos</span>
+              </li>
+              <li
+                onClick={() => handleNavigation("/historial")}
+                className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+              >
+                <Clock size={18} /> <span className="text-sm">Historial</span>
+              </li>
+              <li
+                onClick={() => handleNavigation("/usuarios")}
+                className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+              >
+                <Users size={18} /> <span className="text-sm">Usuarios</span>
+              </li>
+            </>
+          )}
         </ul>
       </div>
 
-      {/* Divider */}
       <div className="w-full h-[1px] bg-gray-300 my-6" />
 
-      {/* Otros */}
       <div className="px-6">
         <h2 className="text-gray-500 text-[0.75rem] font-semibold mb-4">
           OTROS
         </h2>
         <ul className="flex flex-col gap-4">
+          {isAdministrador && (
           <li
             onClick={() => handleNavigation("/reportes")}
             className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
           >
+
             <FileText size={18} /> <span className="text-sm">Reportes</span>
           </li>
-          <li 
+          )}
+          <li
             onClick={handleLogout}
             className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
           >

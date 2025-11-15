@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import SideBar from "./components/SideBar";
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
@@ -6,41 +6,54 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import routes from "../routes";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { div } from "framer-motion/client";
 
 const Layout = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user } = useAuth();
 
-  // Si estás en /login, no renderiza header ni sidebar
   const isLoginPage = location.pathname === "/login";
-  const isHomePage = location.pathname === "/"; 
+  const isClienteView = location.pathname === "/";
+  
+  const isEmpleado = user?.rol === "Empleado";
+
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {!isLoginPage && (
         <div className="bg-[#59b03c] p-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <img
+
+            {!isClienteView && (
+              <img
               src="svgs/menu.png"
               width={30}
               className="cursor-pointer"
               alt="menu"
               onClick={() => setIsOpen((prev) => !prev)}
-            />
+            /> 
+            )}
+            
             <h1 className="text-3xl font-bold text-white">
               Cafetería "Bendita Patria"
             </h1>
           </div>
-          <SideBar isOpen={isOpen} setIsOpen={setIsOpen} />
+         <SideBar isOpen={isOpen} setIsOpen={setIsOpen} />
+          
         </div>
       )}
 
       <div className="flex-1 flex w-full">{children}</div>
     </div>
   );
+
+
 };
+
+
 
 const App = () => {
   const queryClient = new QueryClient();
@@ -76,7 +89,7 @@ const App = () => {
               <Route
                 path="/historial"
                 element={
-                  <ProtectedRoute allowedRoles={[ "Administrador"]}>
+                  <ProtectedRoute allowedRoles={["Administrador"]}>
                     {routes.find(r => r.path === "/historial").element}
                   </ProtectedRoute>
                 }
