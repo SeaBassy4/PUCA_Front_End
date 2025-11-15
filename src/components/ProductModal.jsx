@@ -27,6 +27,7 @@ const ProductModal = ({
           <div className="flex justify-end mt-4">
             <div
               onClick={onClose}
+              data-cy="close-modal-button"
               className="bg-white  cursor-pointer rounded-full px-2 absolute top-2 right-2"
             >
               <span className="font-semibold">X</span>
@@ -35,6 +36,7 @@ const ProductModal = ({
               <div className="flex flex-row gap-5 w-full">
                 <button
                   onClick={onConfirm}
+                  data-cy="confirm-add-button"
                   className={`text-white font-semibold py-2 px-4 rounded-md w-full bg-green-600`}
                 >
                   Confirm
@@ -49,6 +51,7 @@ const ProductModal = ({
             ) : (
               <button
                 onClick={onConfirm}
+                data-cy="confirm-add-button"
                 className={`text-white font-semibold py-2 px-4 rounded-md w-full ${classes}`}
               >
                 Confirm
