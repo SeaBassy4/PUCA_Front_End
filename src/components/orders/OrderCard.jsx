@@ -14,7 +14,11 @@ const OrderCard = ({ order, onComplete, onDelete, detalleOrdenes }) => {
             x{producto.cantidad} {producto.idProducto.nombre} -{" "}
             <span className="font-bold">{producto?.idTamaño?.nombre}</span> -{" "}
             <span className="text-green-600 font-bold">
-              ${(producto.precioUnitario * producto.cantidad).toFixed(2)}
+              $
+              {(
+                producto.precioUnitario * producto.cantidad +
+                (producto?.idTamaño?.precioExtra || 0) * producto.cantidad
+              ).toFixed(2)}
             </span>
           </li>
         ))}
