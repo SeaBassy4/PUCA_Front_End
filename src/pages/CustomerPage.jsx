@@ -292,6 +292,7 @@ const CustomerPage = () => {
                     <img
                       onClick={() => deleteProductFromOrder(index)}
                       className="cursor-pointer"
+                      data-cy="delete-product"
                       src="/svgs/delete.png"
                       alt="delete"
                       width={20}
@@ -305,6 +306,7 @@ const CustomerPage = () => {
               </p>
               <button
                 onClick={async () => await handleCreateOrder()}
+                data-cy="confirm-order-button"
                 className="text-white bg-green-600 font-semibold py-2 px-4 my-4 rounded-md w-full"
               >
                 Confirm

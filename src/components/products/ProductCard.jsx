@@ -17,6 +17,7 @@ const ProductCard = ({ imgSrc, altText, title, onClick }) => {
           src="svgs/right.png"
           alt="right"
           onClick={onClick}
+          data-cy={`arrow-${title}`}
         />
       </div>
     </div>

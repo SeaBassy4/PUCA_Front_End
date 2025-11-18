@@ -31,3 +31,13 @@ export const putOrden = async (id, datos) => {
     throw error;
   }
 };
+
+export const enviarTicketWhatsapp = async (datos) => {
+  try {
+    const response = await axios.post(`${API_URL}/whatsapp-message`, datos);
+    return response.data;
+  } catch (error) {
+    console.error("Error al enviar ticket por WhatsApp:", error);
+    throw error;
+  }
+};

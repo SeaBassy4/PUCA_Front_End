@@ -4,7 +4,11 @@ import SearchBox from "../components/SearchBox";
 import Modal from "../components/Modal";
 import { useState, useEffect } from "react";
 import { getDetalleOrdenes } from "../services/detalle-orden.service";
-import { getOrdenes, putOrden } from "../services/orden.service";
+import {
+  getOrdenes,
+  putOrden,
+  enviarTicketWhatsapp,
+} from "../services/orden.service";
 import { useQuery } from "@tanstack/react-query";
 import { validatePhoneNumber } from "../utils/validatePhoneNumber";
 import { toast } from "react-toastify";
@@ -33,6 +37,7 @@ const OrdersPage = () => {
   //use states
   const [showCompleteOrderModal, setShowCompleteOrderModal] = useState(false);
   const [showDeleteOrderModal, setShowDeleteOrderModal] = useState(false);
+  const [filteredDetalleOrdenes, setFilteredDetalleOrdenes] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [search, setSearch] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -44,9 +49,19 @@ const OrdersPage = () => {
 
   //effects
   useEffect(() => {
-    console.log("ordenes", ordenes);
-    console.log("detalle ordenes", detalleOrdenes);
-  }, [ordenes, detalleOrdenes]);
+    if (!ordenes || !detalleOrdenes || !selectedOrder) {
+      return;
+    }
+
+    const filtered = detalleOrdenes.filter(
+      (detalle) => detalle.idOrden === selectedOrder._id
+    );
+
+    console.log("Filtered Detalle Ordenes:", filtered);
+    console.log("Selected Order:", selectedOrder);
+
+    setFilteredDetalleOrdenes(filtered);
+  }, [selectedOrder]);
 
   useEffect(() => {
     setPhoneNumber("");
@@ -143,10 +158,16 @@ const OrdersPage = () => {
                   toast.success(response.message);
                   setShowCompleteOrderModal((prev) => !prev);
                   if (phoneNumber) {
-                    console.log(
-                      "Enviando ticket a whatsapp del cliente al:",
-                      phoneNumber
-                    );
+                    //mandamos un post al back y el back se encarga de hacer el pdf y enviarlo al numero indicado
+                    const whatsappResponse = await enviarTicketWhatsapp({
+                      orden: selectedOrder,
+                      detalleOrdenes: filteredDetalleOrdenes,
+                      celular: phoneNumber,
+                    });
+
+                    if (whatsappResponse.ok) {
+                      toast.success(whatsappResponse.message);
+                    }
                   }
                 } else {
                   toast.error(response.message);
