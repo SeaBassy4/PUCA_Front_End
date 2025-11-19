@@ -1,10 +1,18 @@
 import React from "react";
 
-const InputLabel = ({ title, onChange, value, placeholder, classNames }) => {
+const InputLabel = ({
+  title,
+  onChange,
+  value,
+  placeholder,
+  classNames,
+  ...rest
+}) => {
   return (
     <div className={`flex flex-col`}>
       <label className="font-bold mb-2">{title}</label>
       <input
+        {...rest}
         type="text"
         onChange={onChange}
         value={value}

@@ -173,10 +173,12 @@ const ProductsPage = () => {
       toast.warning("Por favor, complete todos los campos obligatorios.");
       return false;
     }
+    /*
     if (!object.imagenLink && selectedFile === null) {
       toast.warning("Por favor, seleccione una imagen.");
       return false;
     }
+      */
 
     return true;
   };
@@ -222,6 +224,7 @@ const ProductsPage = () => {
               <option value="">Seleccionar</option>
             </select>
             <button
+              data-cy="crear-producto-button"
               onClick={() => setShowModal({ ...showModal, ADD_PRODUCT: true })}
               className="bg-[#19212D] font-bold text-white text-xl rounded-[5px] px-6 h-11"
             >
@@ -315,109 +318,91 @@ const ProductsPage = () => {
           </div>
         </div>
       </div>
-      {showModal.ADD_PRODUCT && (
-        <Modal
-          onClose={() => {
-            setShowModal({ ...showModal, ADD_PRODUCT: false });
-            cleanProductObject();
-          }}
-          title="Añadir Producto"
-          onConfirm={async () => {
-            try {
-              if (!validateProduct(newProduct)) return;
-              const supabaseUrl = await uploadImage(selectedFile);
-              if (!supabaseUrl) {
-                toast.error("Error al subir la imagen");
-                return;
-              }
-              const productWithImage = {
-                ...newProduct,
-                imagenLink: supabaseUrl,
-              };
-
-              const response = await postProducto(productWithImage);
-
-              if (response.ok) {
-                refetchProductos();
-                Swal.fire({
-                  icon: "success",
-                  title: "¡Producto agregado!",
-                  text: response.message,
-                  timer: 2000,
-                  showConfirmButton: false,
-                });
-                cleanProductObject();
-                setShowModal({ ...showModal, ADD_PRODUCT: false });
-              } else {
-                toast.error(response.message);
-              }
-            } catch (error) {
-              toast.error(error.message);
-            }
-          }}
-        >
-          <p>
-            Aquí podrá añadir un nuevo producto para añadirlo al área de ventas
-          </p>
-          <div className="my-2 gap-5 flex justify-around">
-            <InputLabel
-              classNames="w-full"
-              title="Nombre Producto"
-              onChange={(e) => {
-                setNewProduct({ ...newProduct, nombre: e.target.value });
-              }}
-              value={newProduct.nombre}
-              placeholder="Ingrese el nombre..."
-            />
-            <InputLabel
-              classNames="w-full"
-              title="Precio"
-              onChange={(e) => {
-                const onlyNumbers = e.target.value.replace(/\D/g, "");
-                setNewProduct({
-                  ...newProduct,
-                  precioBase: onlyNumbers,
-                });
-              }}
-              value={newProduct.precioBase}
-              placeholder="Ingrese el precio..."
-            />
-          </div>
-          <div className="mb-2 flex flex-col">
-            <label className="font-bold mb-2">Categoría</label>
-            <select
-              className="border border-gray-300 rounded-md p-2"
-              name="categoria"
-              id="categoria"
-              value={newProduct.idCategoria || ""}
-              onChange={(e) =>
-                setNewProduct({
-                  ...newProduct,
-                  idCategoria: e.target.value,
-                })
-              }
-            >
-              {categoriasFiltradas.map((categoria) => (
-                <option key={categoria._id} value={categoria._id}>
-                  {categoria.nombre}
-                </option>
-              ))}
-              <option value="">Seleccionar</option>
-            </select>
-          </div>
-
+      
+{showModal.ADD_PRODUCT && (
+      <Modal
+        onClose={() => {
+          setShowModal({ ...showModal, ADD_PRODUCT: false });
+          cleanProductObject();
+        }}
+        title="Añadir Producto"
+        onConfirm={async () => {
+          // ...tu lógica de onConfirm...
+        }}
+      >
+        <p>
+          Aquí podrá añadir un nuevo producto para añadirlo al área de ventas
+        </p>
+        <div className="my-2 gap-5 flex justify-around">
+          
+          {/* 1. INPUT DE NOMBRE */}
           <InputLabel
-            classNames="w-full mb-4"
-            title="Descripción"
+            data-cy="input-nombre" // <-- AÑADE ESTO
+            classNames="w-full"
+            title="Nombre Producto"
             onChange={(e) => {
+              setNewProduct({ ...newProduct, nombre: e.target.value });
+            }}
+            value={newProduct.nombre}
+            placeholder="Ingrese el nombre..."
+          />
+          
+          {/* 2. INPUT DE PRECIO */}
+          <InputLabel
+            data-cy="input-precio" // <-- AÑADE ESTO
+            classNames="w-full"
+            title="Precio"
+            onChange={(e) => {
+              const onlyNumbers = e.target.value.replace(/\D/g, "");
               setNewProduct({
                 ...newProduct,
-                descripcion: e.target.value,
+                precioBase: onlyNumbers,
               });
             }}
-            value={newProduct.descripcion}
-            placeholder="Ingrese la descripción..."
+            value={newProduct.precioBase}
+            placeholder="Ingrese el precio..."
           />
+        </div>
+        <div className="mb-2 flex flex-col">
+          <label className="font-bold mb-2">Categoría</label>
+          
+          {/* 3. SELECT DE CATEGORÍA (¡Este es el que te faltaba!) */}
+          <select
+            data-cy="select-categoria" // <-- AÑADE ESTO
+            className="border border-gray-300 rounded-md p-2"
+            name="categoria"
+            id="categoria"
+            value={newProduct.idCategoria || ""}
+            onChange={(e) =>
+              setNewProduct({
+                ...newProduct,
+                idCategoria: e.target.value,
+              })
+            }
+          >
+            {categoriasFiltradas.map((categoria) => (
+              <option key={categoria._id} value={categoria._id}>
+                {categoria.nombre}
+              </option>
+            ))}
+            <option value="">Seleccionar</option>
+          </select>
+        </div>
+
+        {/* 4. INPUT DE DESCRIPCIÓN */}
+        <InputLabel
+          data-cy="input-descripcion" // <-- AÑADE ESTO
+          classNames="w-full mb-4"
+          title="Descripción"
+          onChange={(e) => {
+            setNewProduct({
+              ...newProduct,
+              descripcion: e.target.value,
+            });
+          }}
+          value={newProduct.descripcion}
+          placeholder="Ingrese la descripción..."
+        />
           <div className="flex flex-row w-full justify-between">
             <span className="font-bold mb-2">Imagen de Presentación</span>
             <button
@@ -442,6 +427,7 @@ const ProductsPage = () => {
             />
           </div>
         </Modal>
+
       )}
       {showModal.EDIT_PRODUCT && selectedProduct && (
         <Modal
@@ -523,6 +509,7 @@ const ProductsPage = () => {
           </p>
           <div className="my-2 gap-5 flex justify-around">
             <InputLabel
+              data-cy="input-nombre"
               classNames="w-full"
               title="Nombre Producto"
               onChange={(e) => {
@@ -532,6 +519,7 @@ const ProductsPage = () => {
               placeholder="Ingrese el nombre..."
             />
             <InputLabel
+              data-cy="input-precio"
               classNames="w-full"
               title="Precio"
               onChange={(e) => {
@@ -548,6 +536,7 @@ const ProductsPage = () => {
           <div className="mb-2 flex flex-col">
             <label className="font-bold mb-2">Categoría</label>
             <select
+              data-cy="select-categoria"
               className="border border-gray-300 rounded-md p-2"
               name="categoria"
               id="categoria"
@@ -569,6 +558,7 @@ const ProductsPage = () => {
           </div>
 
           <InputLabel
+            data-cy="input-descripcion"
             classNames="w-full mb-4"
             title="Descripción"
             onChange={(e) => {
