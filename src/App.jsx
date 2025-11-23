@@ -1,7 +1,13 @@
 import React, { useEffect } from "react";
 import SideBar from "./components/SideBar";
 import { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+  Navigate,
+} from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -17,43 +23,37 @@ const Layout = ({ children }) => {
 
   const isLoginPage = location.pathname === "/login";
   const isClienteView = location.pathname === "/";
-  
-  const isEmpleado = user?.rol === "Empleado";
 
+  const isEmpleado = user?.rol === "Empleado";
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {!isLoginPage && (
         <div className="bg-[#59b03c] p-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-
             {!isClienteView && (
               <img
-              src="svgs/menu.png"
-              width={30}
-              className="cursor-pointer"
-              alt="menu"
-              onClick={() => setIsOpen((prev) => !prev)}
-            /> 
+                src="svgs/menu.png"
+                width={30}
+                className="cursor-pointer"
+                alt="menu"
+                onClick={() => setIsOpen((prev) => !prev)}
+                data-cy="menu-button"
+              />
             )}
-            
+
             <h1 className="text-3xl font-bold text-white">
               Cafetería "Bendita Patria"
             </h1>
           </div>
-         <SideBar isOpen={isOpen} setIsOpen={setIsOpen} />
-          
+          <SideBar isOpen={isOpen} setIsOpen={setIsOpen} />
         </div>
       )}
 
       <div className="flex-1 flex w-full">{children}</div>
     </div>
   );
-
-
 };
-
-
 
 const App = () => {
   const queryClient = new QueryClient();
@@ -66,15 +66,21 @@ const App = () => {
           <Layout>
             <Routes>
               {/* Rutas públicas */}
-              <Route path="/" element={routes.find(r => r.path === "/").element} />
-              <Route path="/login" element={routes.find(r => r.path === "/login").element} />
+              <Route
+                path="/"
+                element={routes.find((r) => r.path === "/").element}
+              />
+              <Route
+                path="/login"
+                element={routes.find((r) => r.path === "/login").element}
+              />
 
               {/* Rutas protegidas */}
               <Route
                 path="/ordenes"
                 element={
                   <ProtectedRoute allowedRoles={["Empleado", "Administrador"]}>
-                    {routes.find(r => r.path === "/ordenes").element}
+                    {routes.find((r) => r.path === "/ordenes").element}
                   </ProtectedRoute>
                 }
               />
@@ -82,7 +88,7 @@ const App = () => {
                 path="/productos"
                 element={
                   <ProtectedRoute allowedRoles={["Administrador"]}>
-                    {routes.find(r => r.path === "/productos").element}
+                    {routes.find((r) => r.path === "/productos").element}
                   </ProtectedRoute>
                 }
               />
@@ -90,7 +96,7 @@ const App = () => {
                 path="/historial"
                 element={
                   <ProtectedRoute allowedRoles={["Administrador"]}>
-                    {routes.find(r => r.path === "/historial").element}
+                    {routes.find((r) => r.path === "/historial").element}
                   </ProtectedRoute>
                 }
               />
@@ -98,7 +104,7 @@ const App = () => {
                 path="/usuarios"
                 element={
                   <ProtectedRoute allowedRoles={["Administrador"]}>
-                    {routes.find(r => r.path === "/usuarios").element}
+                    {routes.find((r) => r.path === "/usuarios").element}
                   </ProtectedRoute>
                 }
               />
@@ -106,16 +112,11 @@ const App = () => {
                 path="/reportes"
                 element={
                   <ProtectedRoute allowedRoles={["Administrador"]}>
-                    {routes.find(r => r.path === "/reportes").element}
+                    {routes.find((r) => r.path === "/reportes").element}
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="*"
-                element={
-                  <Navigate to="/" replace />
-                }
-              />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Layout>
         </Router>

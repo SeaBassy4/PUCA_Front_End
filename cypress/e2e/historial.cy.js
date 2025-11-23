@@ -2,7 +2,25 @@
 
 describe("Historial de Órdenes - Filtros", () => {
   beforeEach(() => {
-    cy.visit("http://localhost:5173/historial");
+    cy.visit("http://localhost:5173/login");
+
+    cy.get('[data-cy="input-correo"]').type("admin@benditapatria.com");
+    // Escribir contraseña
+    cy.get('[data-cy="input-contra"]').type("hola123");
+    // Click en botón de iniciar sesión
+    cy.get('[data-cy="button-login"]').click();
+
+    cy.url().should("not.include", "/login");
+    cy.wait(2000);
+
+    // 4. Abrir el menú sidebar
+    cy.get('[data-cy="menu-button"]').click();
+
+    // 5. Hacer click en la opción "Historial" del sidebar
+    cy.get('[data-cy="sidebar-historial"]').click();
+
+    cy.wait(2000); // Esperar a que la página cargue
+
     // Esperar a que los datos se carguen
     cy.get('[data-cy="orden-row"]').should("exist");
   });

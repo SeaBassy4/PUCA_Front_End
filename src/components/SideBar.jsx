@@ -68,6 +68,7 @@ const SideBar = ({ isOpen, setIsOpen }) => {
           <li
             onClick={() => handleNavigation("/ordenes")}
             className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+            data-cy="sidebar-ordenes"
           >
             <Home size={18} /> <span className="text-sm">Órdenes</span>
           </li>
@@ -76,18 +77,21 @@ const SideBar = ({ isOpen, setIsOpen }) => {
               <li
                 onClick={() => handleNavigation("/productos")}
                 className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+                data-cy="sidebar-productos"
               >
                 <Package size={18} /> <span className="text-sm">Productos</span>
               </li>
               <li
                 onClick={() => handleNavigation("/historial")}
                 className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+                data-cy="sidebar-historial"
               >
                 <Clock size={18} /> <span className="text-sm">Historial</span>
               </li>
               <li
                 onClick={() => handleNavigation("/usuarios")}
                 className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+                data-cy="sidebar-usuarios"
               >
                 <Users size={18} /> <span className="text-sm">Usuarios</span>
               </li>
@@ -104,17 +108,18 @@ const SideBar = ({ isOpen, setIsOpen }) => {
         </h2>
         <ul className="flex flex-col gap-4">
           {isAdministrador && (
-          <li
-            onClick={() => handleNavigation("/reportes")}
-            className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
-          >
-
-            <FileText size={18} /> <span className="text-sm">Reportes</span>
-          </li>
+            <li
+              onClick={() => handleNavigation("/reportes")}
+              className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+              data-cy="sidebar-reportes"
+            >
+              <FileText size={18} /> <span className="text-sm">Reportes</span>
+            </li>
           )}
           <li
             onClick={handleLogout}
             className="flex items-center gap-3 cursor-pointer hover:text-blue-600"
+            data-cy="sidebar-logout"
           >
             <LogOut size={18} /> <span className="text-sm">Cerrar Sesión</span>
           </li>
