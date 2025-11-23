@@ -39,7 +39,7 @@ const LoginPage = () => {
       console.log("Usuario encontrado:", usuarioEncontrado); // DEBUG
 
       if (!usuarioEncontrado) {
-        toast.error("Por favor, completa todos los campos");
+        toast.error("Por favor, completa todos los campos correctamente");
         return;
       }
       if (!usuarioEncontrado.activo) {
@@ -83,16 +83,16 @@ const LoginPage = () => {
             <div className='w-full flex flex-col items-center'>
               <div className='w-[80%]'>
                 <label className='block font-bold text-2xl mb-2'>Correo Electrónico</label>
-                <input className='border border-gray-300 w-full rounded-sm p-1 mb-5' type="text" name="correo" id="correo" value={correo} onChange={(e) => setCorreo(e.target.value)} />
+                <input data-cy="input-correo" className='border border-gray-300 w-full rounded-sm p-1 mb-5' type="text" name="correo" id="correo" value={correo} onChange={(e) => setCorreo(e.target.value)} />
               </div>
 
               <div className='w-[80%]'>
                 <label className='block font-bold text-2xl mb-2'>Contraseña</label>
-                <input className='border border-gray-300 w-full rounded-sm p-1 mb-8' type="password" name='contra' id='contra' value={contraseña} onChange={(e) => setContraseña(e.target.value)} />
+                <input data-cy="input-contra" className='border border-gray-300 w-full rounded-sm p-1 mb-8' type="password" name='contra' id='contra' value={contraseña} onChange={(e) => setContraseña(e.target.value)} />
               </div>
 
               <div className='w-[80%]'>
-                <button type='submit' className='bg-[#59B03C] text-white font-semibold w-full rounded-[10px] p-2'>Iniciar Sesión</button>
+                <button data-cy="button-login" type='submit' className='bg-[#59B03C] text-white font-semibold w-full rounded-[10px] p-2'>Iniciar Sesión</button>
               </div>
               
             </div>

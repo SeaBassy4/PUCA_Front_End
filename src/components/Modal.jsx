@@ -13,6 +13,7 @@ const Modal = ({ onClose, children, title, type, onConfirm, onDelete }) => {
         <div className="flex justify-end mt-4">
           <span
             onClick={onClose}
+            data-cy="cerrar-modal-button" // <-- AÑADIMOS ESTE
             className="font-semibold p-2 cursor-pointer absolute top-2 right-2"
           >
             X
@@ -21,12 +22,14 @@ const Modal = ({ onClose, children, title, type, onConfirm, onDelete }) => {
             <div className="flex flex-row gap-5 w-full">
               <button
                 onClick={onConfirm}
+                data-cy="confirmar-modal-button" // <-- AÑADIMOS ESTE
                 className={`text-white font-semibold py-2 px-4 rounded-md w-full bg-green-600`}
               >
                 Confirm
               </button>
               <button
                 onClick={onDelete}
+                data-cy="eliminar-modal-button" // <-- AÑADIMOS ESTE
                 className={`text-white font-semibold py-2 px-4 rounded-md w-full bg-red-600`}
               >
                 Eliminar
@@ -35,6 +38,7 @@ const Modal = ({ onClose, children, title, type, onConfirm, onDelete }) => {
           ) : (
             <button
               onClick={onConfirm}
+              data-cy="confirmar-modal-button" // <-- Y TAMBIÉN ESTE
               className={`text-white font-semibold py-2 px-4 rounded-md w-full ${classes}`}
             >
               Confirm
