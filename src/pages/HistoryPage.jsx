@@ -45,13 +45,14 @@ const HistoryPage = () => {
     const firstOrdenTime = new Date(firstOrden.fechaHora).getTime();
     const lastOrdenTime = new Date(lastOrden.fechaHora).getTime();
     return firstOrdenTime - lastOrdenTime;
-  }); 
+  });
 
   const filteredOrdenes = sortedOrdenes.filter((orden) => {
     return (
       orden.nombreCliente.toLowerCase().includes(search.toLowerCase()) &&
-      (selectedState === "" ? 
-        orden.estado === "Completada" || orden.estado === "Cancelada" : orden.estado === selectedState) &&
+      (selectedState === ""
+        ? orden.estado === "Completada" || orden.estado === "Cancelada"
+        : orden.estado === selectedState) &&
       (orden.idUsuario?._id === selectedEmpleado || selectedEmpleado === "")
     );
   });
@@ -67,6 +68,7 @@ const HistoryPage = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por cliente..."
+          data-cy="search-cliente" // ← AGREGAR ESTE DATA-CY
         />
         <select
           className="bg-white border border-black rounded-md p-2 px-4 hover:bg-gray-100 font-semibold"
@@ -74,6 +76,7 @@ const HistoryPage = () => {
           id="estado"
           value={selectedState}
           onChange={(e) => setSelectedState(e.target.value)}
+          data-cy="select-estado" // ← AGREGAR ESTE DATA-CY
         >
           <option value="">Seleccionar</option>
           <option value="Completada">Completada</option>
@@ -85,6 +88,7 @@ const HistoryPage = () => {
           id="empleado"
           value={selectedEmpleado}
           onChange={(e) => setSelectedEmpleado(e.target.value)}
+          data-cy="select-empleado" // ← AGREGAR ESTE DATA-CY
         >
           {filteredEmpleados.map((empleado) => (
             <option key={empleado._id} value={empleado._id}>
@@ -100,35 +104,38 @@ const HistoryPage = () => {
         <div className="w-[90%] overflow-x-auto bg-white border rounded-md shadow-md">
           <table className="w-full border-collapse max-h-screen overflow-y-auto">
             <div className="w-full bg-white border rounded-md shadow-md overflow-auto max-h-[70vh] ">
-            <table className="w-full border-collapse">
-              <thead>
-              <tr className="bg-gray-200 text-left">
-                <th className="p-3">Nombre Cliente</th>
-                <th className="p-3">Fecha y Hora</th>
-                <th className="p-3">Estado</th>
-                <th className="p-3">Total</th>
-                <th className="p-3">Empleado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrdenes.map((orden) => (
-                <tr
-                  key={orden._id}
-                  className="border-t hover:bg-gray-100 transition"
-                >
-                  <td className="p-3">{orden.nombreCliente}</td>
-                  <td className="p-3">
-                    {new Date(orden.fechaHora).toLocaleString("es-MX")}
-                  </td>
-                  <td className="p-3">{orden.estado}</td>
-                  <td className="p-3 font-semibold">
-                    ${orden.total.toFixed(2)}
-                  </td>
-                  <td className="p-3">{orden.idUsuario?.nombre || "N/A"}</td>
-                </tr>
-              ))}
-            </tbody>
-            </table>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-200 text-left">
+                    <th className="p-3">Nombre Cliente</th>
+                    <th className="p-3">Fecha y Hora</th>
+                    <th className="p-3">Estado</th>
+                    <th className="p-3">Total</th>
+                    <th className="p-3">Empleado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredOrdenes.map((orden) => (
+                    <tr
+                      key={orden._id}
+                      className="border-t hover:bg-gray-100 transition"
+                      data-cy="orden-row" // ← AGREGAR ESTE DATA-CY EN CADA FILA
+                    >
+                      <td className="p-3">{orden.nombreCliente}</td>
+                      <td className="p-3">
+                        {new Date(orden.fechaHora).toLocaleString("es-MX")}
+                      </td>
+                      <td className="p-3">{orden.estado}</td>
+                      <td className="p-3 font-semibold">
+                        ${orden.total.toFixed(2)}
+                      </td>
+                      <td className="p-3">
+                        {orden.idUsuario?.nombre || "N/A"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </table>
         </div>
