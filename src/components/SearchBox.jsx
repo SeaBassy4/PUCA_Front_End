@@ -1,4 +1,4 @@
-const SearchBox = ({ onChange, value, classNames, placeholder }) => {
+const SearchBox = ({ onChange, value, classNames, placeholder, dataCy }) => {
   return (
     <div
       className={`flex flex-row gap-3 items-center border border-gray-400 bg-white  w-[160px] px-2  rounded-md ${classNames}`}
@@ -10,6 +10,7 @@ const SearchBox = ({ onChange, value, classNames, placeholder }) => {
         placeholder={placeholder ? placeholder : "Buscar..."}
         onChange={onChange}
         className="outline-none w-full"
+        data-cy={dataCy}
       ></input>
     </div>
   );

@@ -68,7 +68,7 @@ const HistoryPage = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por cliente..."
-          data-cy="search-cliente" // ← AGREGAR ESTE DATA-CY
+          dataCy={"search-cliente"}
         />
         <select
           className="bg-white border border-black rounded-md p-2 px-4 hover:bg-gray-100 font-semibold"
