@@ -180,8 +180,9 @@ const ReportsPage = () => {
               Seleccione una Fecha
             </h2>
               <div className="overflow-y-auto max-h-[420px]">
-                <div className="bg-white shadow-md rounded-lg p-4">
+              <div data-cy="datepicker-wrapper" className="bg-white shadow-md rounded-lg p-4">
               <DatePicker
+                
                 selected={selectedDate}
                 onChange={(date) => setSelectedDate(date)}
                 dateFormat="dd/MM/yyyy"
@@ -206,8 +207,8 @@ const ReportsPage = () => {
               </p>
 
               <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-                
-              <h3 className="text-lg font-semibold">
+
+              <h3 className="text-lg font-semibold" data-cy="selected-date">
                 {selectedDate
                   ? `Informe de Ventas Día: ${selectedDate.toLocaleDateString("es-ES")}`
                   : "Seleccione una fecha para visualizar el informe"}
@@ -226,6 +227,7 @@ const ReportsPage = () => {
                 
                 <label key= {key} className="flex items-center gap-2">
                   <input
+                   data-cy={`checkbox-${key}`}
                    type="checkbox"
                    disabled = {!selectedDate}
                       checked={opcionesSeleccionadas[key].value}
@@ -248,6 +250,7 @@ const ReportsPage = () => {
 
               <div className="flex gap-4 mt-6">
                 <button
+                  data-cy="export-selection"
                 onClick={() => generarPDF(opcionesSeleccionadas)}
                 disabled={!selectedDate} 
                   className={`px-5 py-2 rounded text-white ${
