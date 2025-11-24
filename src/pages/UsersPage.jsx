@@ -19,6 +19,14 @@ const UsersTable = () => {
   const [action, setAction] = useState("add"); // "agregar" | "editar"
   const [selectedUser, setSelectedUser] = useState(null);
 
+  const usuariosFiltrados = usuarios.filter((u) =>
+    u.nombre.toLowerCase().includes(search.toLowerCase()) ||
+    u.correo.toLowerCase().includes(search.toLowerCase()) ||
+    u.celular.toLowerCase().includes(search.toLowerCase()) ||
+    u.rol.toLowerCase().includes(search.toLowerCase())
+  );
+
+  
   //datos del modal inputs
   const [form, setForm] = useState({
     nombre: "",
@@ -213,13 +221,14 @@ const UsersTable = () => {
             <SearchBox
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              dataCy="search-user"
             />
           </div>
         </div>
 
         <button
           onClick={handleAdd}
-          className="px-4 py-2 rounded-md bg-neutral-900 text-white font-semibold hover:opacity-90"
+          className="px-4 py-2 rounded-md bg-neutral-900 text-white font-semibold hover:opacity-90 btn-add-user"
         >
           Añadir
         </button>
@@ -240,42 +249,41 @@ const UsersTable = () => {
               </tr>
             </thead>
             <tbody>
-              {usuarios.map((u) => (
-                <tr
-                  key={u._id}
-                  className="border-t hover:bg-gray-100 transition"
-                >
-                  <td className="p-3">{u.nombre}</td>
-                  <td className="p-3">{u.celular}</td>
-                  <td className="p-3">{u.correo}</td>
-                  <td className="p-3">{u.contraseña ? "********" : "No definida"}</td>
-                  <td className="p-3">{u.rol}</td>
-                  <td className="p-3">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEdit(u)}
-                        className="px-4 py-2 rounded-md bg-neutral-900 text-white font-semibold hover:opacity-90"
-                      > 
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleDelete(u._id)}
-                        className="px-4 py-2 rounded-md bg-neutral-900 text-white font-semibold hover:opacity-90"
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {usuarios.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="p-3 text-center text-gray-500">
-                    No hay usuarios para mostrar.
-                  </td>
-                </tr>
-              )}
-            </tbody>
+  {usuariosFiltrados.length > 0 ? (
+    usuariosFiltrados.map((u) => (
+      <tr key={u._id} className="border-t hover:bg-gray-100 transition">
+        <td className="p-3">{u.nombre}</td>
+        <td className="p-3">{u.celular}</td>
+        <td className="p-3">{u.correo}</td>
+        <td className="p-3">{u.contraseña ? "********" : "No definida"}</td>
+        <td className="p-3">{u.rol}</td>
+        <td className="p-3">
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleEdit(u)}
+              className="px-4 py-2 rounded-md bg-neutral-900 text-white font-semibold hover:opacity-90 btn-edit-user"
+            >
+              Editar
+            </button>
+            <button
+              onClick={() => handleDelete(u._id)}
+              className="px-4 py-2 rounded-md bg-neutral-900 text-white font-semibold hover:opacity-90 btn-delete-user"
+            >
+              Eliminar
+            </button>
+          </div>
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan={6} className="p-3 text-center text-gray-500">
+        No hay usuarios para mostrar.
+      </td>
+    </tr>
+  )}
+</tbody>
+
           </table>
         </div>
       </div>
@@ -300,6 +308,7 @@ const UsersTable = () => {
               <label className="block font-semibold mb-1">Nombre</label>
               <input
                 name="nombre"
+                data-cy="input-nombre"
                 value={form.nombre}
                 onChange={onChange}
                 className={`w-full border rounded-md p-2 outline-none focus:ring-2 ${
@@ -308,6 +317,7 @@ const UsersTable = () => {
                     : "border-gray-300 focus:ring-[#59B03C]"
                 }`}
               />
+
               {errors.nombre && (
                 <p className="text-red-500 text-sm mt-1">{errors.nombre}</p>
               )}
@@ -317,6 +327,7 @@ const UsersTable = () => {
               <label className="block font-semibold mb-1">Celular</label>
               <input
                 name="celular"
+                data-cy="input-celular"
                 value={form.celular}
                 onChange={onChange}
                 className={`w-full border rounded-md p-2 outline-none focus:ring-2 ${
@@ -337,6 +348,7 @@ const UsersTable = () => {
             <input
               type="email"
               name="correo"
+              data-cy="input-correo"
               value={form.correo}
               onChange={onChange}
               className={`w-full border rounded-md p-2 outline-none focus:ring-2 ${
@@ -367,6 +379,7 @@ const UsersTable = () => {
               <input
                 type={showPassword ? "text" : "password"} // Alterna entre "text para mostrar" y "password para ocultar"
                 name="contraseña"
+                data-cy="input-contra"
                 value={form.contraseña}
                 onChange={onChange}
                 className={`w-full border rounded-md p-2 outline-none focus:ring-2 ${
@@ -393,6 +406,7 @@ const UsersTable = () => {
 
             <select
               name="rol"
+              data-cy="select-rol"
               value={form.rol}
               onChange={onChange}
               className={`w-full border rounded-md p-2 outline-none focus:ring-2 ${
