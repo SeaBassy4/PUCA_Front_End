@@ -1,105 +1,81 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { getCategorias } from "../services/categoria.service";
 import { getProductos } from "../services/producto.service";
 import { getTamaños } from "../services/tamaño.service";
 import { postOrden } from "../services/orden.service";
 import { postDetalleOrden } from "../services/detalle-orden.service";
-import { useEffect, useState } from "react";
 import ProductCard from "../components/products/ProductCard";
 import ProductModal from "../components/ProductModal";
-import { useNavigate } from "react-router-dom"; // <-- IMPORTANTE
 
 const CustomerPage = () => {
-  const navigate = useNavigate(); // <-- PARA REDIRECCIONAR
+  const navigate = useNavigate();
 
-  //Data fetching
-  const {
-    data: productos,
-    isLoading: loadingProductos,
-    refetch: refetchProductos,
-  } = useQuery({
+  // Data fetching
+  const { data: productos, isLoading: loadingProductos } = useQuery({
     queryKey: ["productos"],
     queryFn: getProductos,
   });
-  const {
-    data: categorias,
-    isLoading: loadingCategorias,
-    refetch: refetchCategorias,
-  } = useQuery({
+  const { data: categorias, isLoading: loadingCategorias } = useQuery({
     queryKey: ["categorias"],
     queryFn: getCategorias,
   });
-  const {
-    data: tamaños,
-    isLoading: loadingTamaños,
-    refetch: refetchTamaños,
-  } = useQuery({
+  const { data: tamaños, isLoading: loadingTamaños } = useQuery({
     queryKey: ["tamaños"],
     queryFn: getTamaños,
   });
 
+  // State
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [categoriasFiltradas, setCategoriasFiltradas] = useState([]);
   const [productosFiltrados, setProductosFiltrados] = useState([]);
   const [tamañosFiltrados, setTamañosFiltrados] = useState([]);
-  const [total, setTotal] = useState(0);
   const [selectedSize, setSelectedSize] = useState(null);
-  const [clientOrder, setClientOrder] = useState({
-    productos: [],
-    total: 0,
-  });
+  const [total, setTotal] = useState(0);
+  const [clientOrder, setClientOrder] = useState({ productos: [], total: 0 });
 
-  useEffect(() => {
-    console.log("Orden del cliente actualizada: ", clientOrder);
-  }, [clientOrder]);
-
+  // Effects
   useEffect(() => {
     if (categorias) {
-      const filteredCategories = categorias.filter(
-        (categoria) => categoria.activo
-      );
-      setCategoriasFiltradas(filteredCategories);
+      setCategoriasFiltradas(categorias.filter((c) => c.activo));
     }
   }, [categorias]);
 
   useEffect(() => {
     if (tamaños) {
-      const filteredSizes = tamaños.filter((tamaño) => tamaño.activo);
-      setTamañosFiltrados(filteredSizes);
+      setTamañosFiltrados(tamaños.filter((t) => t.activo));
     }
   }, [tamaños]);
 
   useEffect(() => {
-    if (selectedCategory) {
-      const filteredProducts = productos.filter(
-        (product) =>
-          product.activo && product.idCategoria === selectedCategory._id
+    if (selectedCategory && productos) {
+      setProductosFiltrados(
+        productos.filter(
+          (p) => p.activo && p.idCategoria === selectedCategory._id
+        )
       );
-      setProductosFiltrados(filteredProducts);
     }
   }, [selectedCategory, productos]);
 
   useEffect(() => {
-    const totalPrice = selectedSize?.precioExtra + selectedProduct?.precioBase;
-    setTotal(totalPrice);
-  }, [selectedSize]);
-
-  useEffect(() => {
-    setTotal(selectedProduct?.precioBase);
-  }, [selectedProduct]);
+    if (selectedProduct) {
+      setTotal(selectedProduct.precioBase + (selectedSize?.precioExtra || 0));
+    }
+  }, [selectedProduct, selectedSize]);
 
   if (loadingProductos || loadingCategorias || loadingTamaños) {
     return <div>Cargando...</div>;
   }
 
+  // Handlers
   const deleteProductFromOrder = (index) => {
     const filteredArray = clientOrder.productos.filter((_, i) => i !== index);
     setClientOrder((prev) => ({
       ...prev,
       productos: filteredArray,
-      total: filteredArray.reduce((acc, p) => p.precio + acc, 0),
+      total: filteredArray.reduce((acc, p) => acc + p.precio, 0),
     }));
   };
 
@@ -119,15 +95,10 @@ const CustomerPage = () => {
       );
 
       let updatedProductos;
-
       if (foundIndex !== -1) {
         updatedProductos = prev.productos.map((p, index) =>
           index === foundIndex
-            ? {
-                ...p,
-                cantidad: p.cantidad + 1,
-                precio: p.precio + total,
-              }
+            ? { ...p, cantidad: p.cantidad + 1, precio: p.precio + total }
             : p
         );
       } else {
@@ -146,17 +117,13 @@ const CustomerPage = () => {
       }
 
       const newTotal = updatedProductos.reduce((acc, p) => acc + p.precio, 0);
-
       return { ...prev, productos: updatedProductos, total: newTotal };
     });
   };
 
   const handleCreateOrder = async () => {
     try {
-      const nombreCliente = prompt(
-        "¿Cuál es su nombre? (Para recibir su orden)"
-      );
-
+      const nombreCliente = prompt("¿Cuál es su nombre? (Para recibir su orden)");
       if (!nombreCliente || nombreCliente.trim() === "") {
         alert("Por favor ingresa un nombre válido para tu orden.");
         return;
@@ -171,7 +138,6 @@ const CustomerPage = () => {
       const response = await postOrden(newOrder);
       const createdOrderId = response._id;
 
-      let flag = false;
       for (const producto of clientOrder.productos) {
         const newDetalleOrden = {
           idOrden: createdOrderId,
@@ -180,19 +146,15 @@ const CustomerPage = () => {
           cantidad: producto.cantidad,
           precioUnitario: producto.precioUnitario,
         };
-
         await postDetalleOrden(newDetalleOrden);
-        flag = true;
       }
 
-      if (flag) {
-        setClientOrder({ productos: [], total: 0 });
-        setSelectedCategory(null);
-        setSelectedProduct(null);
-        setSelectedSize(null);
-        setTotal(0);
-        alert("Orden creada con éxito, por favor espere su pedido");
-      }
+      setClientOrder({ productos: [], total: 0 });
+      setSelectedCategory(null);
+      setSelectedProduct(null);
+      setSelectedSize(null);
+      setTotal(0);
+      alert("Orden creada con éxito, por favor espere su pedido");
     } catch (error) {
       console.error("Error al crear la orden (desde el frontend):", error);
     }
@@ -200,15 +162,15 @@ const CustomerPage = () => {
 
   return (
     <div className="w-full flex-1 flex flex-row justify-center items-center relative">
-
-      {/* === BOTÓN PARA IR AL LOGIN === */}
+      {/* Botón para ir al login en esquina inferior derecha */}
       <button
         onClick={() => navigate("/login")}
-        className="bg-blue-600 text-white py-2 px-4 rounded-md absolute top-5 left-5"
+        className="fixed bottom-5 right-5 bg-blue-600 text-white py-3 px-5 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
       >
         Ir al Login
       </button>
 
+      {/* Contenedor principal */}
       <div className="flex flex-col w-[75%] p-10 h-full">
         {selectedCategory ? (
           <div className="flex flex-row gap-5">
@@ -251,6 +213,7 @@ const CustomerPage = () => {
         </div>
       </div>
 
+      {/* Sidebar orden */}
       <div className="h-full w-[30%] p-10">
         <div className="rounded-md bg-white border-gray-300 border-2 flex h-full p-4">
           {clientOrder.productos.length === 0 ? (
@@ -292,15 +255,12 @@ const CustomerPage = () => {
                   </li>
                 ))}
               </ul>
-
               <p className="font-bold text-lg mt-4">
                 Total a Pagar:{" "}
                 <span className="text-green-600">${clientOrder.total}</span>
               </p>
-
               <button
-                onClick={async () => await handleCreateOrder()}
-                data-cy="confirm-order-button"
+                onClick={handleCreateOrder}
                 className="text-white bg-green-600 font-semibold py-2 px-4 my-4 rounded-md w-full"
               >
                 Confirm
@@ -310,14 +270,14 @@ const CustomerPage = () => {
         </div>
       </div>
 
-      {/* Modal Bebidas */}
-      {selectedProduct && selectedCategory?.nombre === "Bebidas" ? (
+      {/* Modal productos */}
+      {selectedProduct && (
         <ProductModal
-          onClose={() => handleCloseModal()}
+          onClose={handleCloseModal}
           title={selectedProduct.nombre}
-          bannerLink={selectedCategory.bannerLink}
+          bannerLink={selectedCategory?.bannerLink}
           onConfirm={() => {
-            if (!selectedSize) {
+            if (selectedCategory?.nombre === "Bebidas" && !selectedSize) {
               alert("Por favor selecciona un tamaño antes");
               return;
             }
@@ -325,47 +285,30 @@ const CustomerPage = () => {
           }}
         >
           <p className="mb-4">{selectedProduct.descripcion}</p>
-          <hr className="mb-4" />
-          <h2 className="mb-4">Seleccionar Tamaño</h2>
-
-          <div className="flex flex-row w-full">
-            {tamañosFiltrados.map((tamaño) => (
-              <div
-                onClick={() => setSelectedSize(tamaño)}
-                key={tamaño._id}
-                className={`rounded-md p-2 m-2 cursor-pointer bg-yellow-300 text-black ${
-                  selectedSize?._id === tamaño._id ? "!bg-green-400" : ""
-                }`}
-              >
-                <p className="font-bold">{tamaño.nombre}</p>
+          {selectedCategory?.nombre === "Bebidas" && (
+            <>
+              <hr className="mb-4" />
+              <h2 className="mb-4">Seleccionar Tamaño</h2>
+              <div className="flex flex-row w-full">
+                {tamañosFiltrados.map((tamaño) => (
+                  <div
+                    key={tamaño._id}
+                    onClick={() => setSelectedSize(tamaño)}
+                    className={`rounded-md p-2 m-2 cursor-pointer bg-yellow-300 text-black ${
+                      selectedSize?._id === tamaño._id ? "!bg-green-400" : ""
+                    }`}
+                  >
+                    <p className="font-bold">{tamaño.nombre}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-
+            </>
+          )}
           <hr className="my-4" />
           <p className="text-lg font-bold">
-            Precio a pagar:{" "}
-            <span className="text-green-500">${total || 0}</span>
+            Precio a pagar: <span className="text-green-500">${total || 0}</span>
           </p>
         </ProductModal>
-      ) : (
-        selectedProduct && (
-          <ProductModal
-            onClose={() => handleCloseModal()}
-            title={selectedProduct.nombre}
-            bannerLink={selectedCategory.bannerLink}
-            onConfirm={() => {
-              handleAddProduct(selectedProduct, total);
-            }}
-          >
-            <p className="mb-4">{selectedProduct.descripcion}</p>
-            <hr className="mb-4" />
-            <p className="text-lg font-bold">
-              Precio a pagar:{" "}
-              <span className="text-green-500">${total || 0}</span>
-            </p>
-          </ProductModal>
-        )
       )}
     </div>
   );
