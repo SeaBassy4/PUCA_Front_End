@@ -8,8 +8,11 @@ import { postDetalleOrden } from "../services/detalle-orden.service";
 import { useEffect, useState } from "react";
 import ProductCard from "../components/products/ProductCard";
 import ProductModal from "../components/ProductModal";
-import { div } from "framer-motion/client";
+import { useNavigate } from "react-router-dom"; // <-- IMPORTANTE
+
 const CustomerPage = () => {
+  const navigate = useNavigate(); // <-- PARA REDIRECCIONAR
+
   //Data fetching
   const {
     data: productos,
@@ -44,7 +47,7 @@ const CustomerPage = () => {
   const [total, setTotal] = useState(0);
   const [selectedSize, setSelectedSize] = useState(null);
   const [clientOrder, setClientOrder] = useState({
-    productos: [], //{cantidad, nombre, precio, tamaño}
+    productos: [],
     total: 0,
   });
 
@@ -74,9 +77,6 @@ const CustomerPage = () => {
         (product) =>
           product.activo && product.idCategoria === selectedCategory._id
       );
-      console.log("productos filtrados; ", filteredProducts);
-      console.log("categoria seleccionada: ", selectedCategory);
-
       setProductosFiltrados(filteredProducts);
     }
   }, [selectedCategory, productos]);
@@ -153,17 +153,6 @@ const CustomerPage = () => {
 
   const handleCreateOrder = async () => {
     try {
-      //tenemos que crear la orden para que  todos los detalle orden
-      //puedan apuntar a ella
-
-      /*const nuevaOrden = new Orden({
-      idUsuario,
-      nombreCliente,
-      fechaHora: new Date(),
-      estado,
-      total,
-    }); */
-
       const nombreCliente = prompt(
         "¿Cuál es su nombre? (Para recibir su orden)"
       );
@@ -174,22 +163,13 @@ const CustomerPage = () => {
       }
 
       const newOrder = {
-        idUsuario: "68e3289ed580f299becb56c1", //por ahora lo hardcodeamos
-        nombreCliente: nombreCliente,
+        idUsuario: "68e3289ed580f299becb56c1",
+        nombreCliente,
         total: clientOrder.total,
       };
 
       const response = await postOrden(newOrder);
-      const createdOrderId = response._id; //ahora con ese Id creamos detalles Ordenes
-
-      /*    
-      const nuevoDetalleOrden = new DetalleOrden({
-      idOrden,
-      idProducto,
-      idTamaño,
-      cantidad,
-      precioUnitario,
-    }); */
+      const createdOrderId = response._id;
 
       let flag = false;
       for (const producto of clientOrder.productos) {
@@ -204,6 +184,7 @@ const CustomerPage = () => {
         await postDetalleOrden(newDetalleOrden);
         flag = true;
       }
+
       if (flag) {
         setClientOrder({ productos: [], total: 0 });
         setSelectedCategory(null);
@@ -218,7 +199,16 @@ const CustomerPage = () => {
   };
 
   return (
-    <div className="w-full flex-1 flex flex-row justify-center items-center">
+    <div className="w-full flex-1 flex flex-row justify-center items-center relative">
+
+      {/* === BOTÓN PARA IR AL LOGIN === */}
+      <button
+        onClick={() => navigate("/login")}
+        className="bg-blue-600 text-white py-2 px-4 rounded-md absolute top-5 left-5"
+      >
+        Ir al Login
+      </button>
+
       <div className="flex flex-col w-[75%] p-10 h-full">
         {selectedCategory ? (
           <div className="flex flex-row gap-5">
@@ -235,6 +225,7 @@ const CustomerPage = () => {
         ) : (
           <h2 className="font-bold text-2xl">Selecciona Una Categoría 😎</h2>
         )}
+
         <div className="flex flex-row flex-wrap items-center justify-evenly gap-5 h-full">
           {!selectedCategory &&
             categoriasFiltradas.map((categoria) => (
@@ -244,8 +235,9 @@ const CustomerPage = () => {
                 title={categoria.nombre}
                 onClick={() => setSelectedCategory(categoria)}
                 imgSrc={categoria.imagenLink}
-              ></ProductCard>
+              />
             ))}
+
           {selectedCategory &&
             productosFiltrados.map((producto) => (
               <ProductCard
@@ -254,10 +246,11 @@ const CustomerPage = () => {
                 title={producto.nombre}
                 onClick={() => setSelectedProduct(producto)}
                 imgSrc={producto.imagenLink}
-              ></ProductCard>
+              />
             ))}
         </div>
       </div>
+
       <div className="h-full w-[30%] p-10">
         <div className="rounded-md bg-white border-gray-300 border-2 flex h-full p-4">
           {clientOrder.productos.length === 0 ? (
@@ -266,8 +259,7 @@ const CustomerPage = () => {
                 Tu Orden se Creará Aquí
               </h2>
               <p className="mb-4">
-                Selecciona un producto para comenzar a crear tu orden, puedes
-                añadir varios.
+                Selecciona un producto para comenzar a crear tu orden.
               </p>
               <img src="coffee-cup-waiting.png" alt="coffee-cup" />
             </div>
@@ -300,10 +292,12 @@ const CustomerPage = () => {
                   </li>
                 ))}
               </ul>
+
               <p className="font-bold text-lg mt-4">
                 Total a Pagar:{" "}
                 <span className="text-green-600">${clientOrder.total}</span>
               </p>
+
               <button
                 onClick={async () => await handleCreateOrder()}
                 data-cy="confirm-order-button"
@@ -315,8 +309,9 @@ const CustomerPage = () => {
           )}
         </div>
       </div>
-      {/*Modal de Bebidas*/}
-      {selectedProduct && selectedCategory.nombre === "Bebidas" ? (
+
+      {/* Modal Bebidas */}
+      {selectedProduct && selectedCategory?.nombre === "Bebidas" ? (
         <ProductModal
           onClose={() => handleCloseModal()}
           title={selectedProduct.nombre}
@@ -332,33 +327,31 @@ const CustomerPage = () => {
           <p className="mb-4">{selectedProduct.descripcion}</p>
           <hr className="mb-4" />
           <h2 className="mb-4">Seleccionar Tamaño</h2>
+
           <div className="flex flex-row w-full">
-            {tamañosFiltrados.map((tamaño) => {
-              return (
-                <div
-                  onClick={() => setSelectedSize(tamaño)}
-                  key={tamaño._id}
-                  className={`rounded-md p-2 m-2 cursor-pointer bg-yellow-300 text-black ${
-                    selectedSize?._id === tamaño._id ? "!bg-green-400" : ""
-                  }`}
-                >
-                  <p className="font-bold">{tamaño.nombre}</p>
-                </div>
-              );
-            })}
+            {tamañosFiltrados.map((tamaño) => (
+              <div
+                onClick={() => setSelectedSize(tamaño)}
+                key={tamaño._id}
+                className={`rounded-md p-2 m-2 cursor-pointer bg-yellow-300 text-black ${
+                  selectedSize?._id === tamaño._id ? "!bg-green-400" : ""
+                }`}
+              >
+                <p className="font-bold">{tamaño.nombre}</p>
+              </div>
+            ))}
           </div>
+
           <hr className="my-4" />
           <p className="text-lg font-bold">
             Precio a pagar:{" "}
-            <span className="font-bold text-green-500">${total || 0}</span>
+            <span className="text-green-500">${total || 0}</span>
           </p>
         </ProductModal>
       ) : (
         selectedProduct && (
           <ProductModal
-            onClose={() => {
-              handleCloseModal();
-            }}
+            onClose={() => handleCloseModal()}
             title={selectedProduct.nombre}
             bannerLink={selectedCategory.bannerLink}
             onConfirm={() => {
@@ -369,7 +362,7 @@ const CustomerPage = () => {
             <hr className="mb-4" />
             <p className="text-lg font-bold">
               Precio a pagar:{" "}
-              <span className="font-bold text-green-500">${total || 0}</span>
+              <span className="text-green-500">${total || 0}</span>
             </p>
           </ProductModal>
         )
