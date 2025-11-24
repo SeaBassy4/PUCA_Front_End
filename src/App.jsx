@@ -15,11 +15,13 @@ import routes from "../routes";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { div } from "framer-motion/client";
+import { useNavigate } from "react-router-dom";
 
 const Layout = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const isLoginPage = location.pathname === "/login";
   const isClienteView = location.pathname === "/";
@@ -47,6 +49,7 @@ const Layout = ({ children }) => {
             </h1>
           </div>
           <SideBar isOpen={isOpen} setIsOpen={setIsOpen} />
+         
         </div>
       )}
 
