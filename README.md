@@ -181,7 +181,7 @@ Para reportar bugs, solicitar features o contribuir al proyecto:
 
     Issues en GitHub: Repositorio PUCA
 
-    Documentación: Notion Documentation
+    Documentación: [Notion Documentation](https://www.notion.so/PUCA-Punto-Cafeter-a-250c97bc1a208006a44bc4723635108a#28bc97bc1a2080ad81f5e49f351f928e)
 
     Correo: equipo.puca@example.com
 
